@@ -1,0 +1,17 @@
+<Page x:Class="KPL_FE.Views.ThemesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
+      Title="Themes">
+
+    <Grid Margin="24">
+        <StackPanel>
+            <TextBlock Text="Themes" FontSize="24" Margin="0,0,0,8" />
+            <TextBlock Text="Placeholder page. Wire ThemeManager controls here." Opacity="0.8" />
+
+            <ui:SimpleStackPanel Margin="0,16,0,0" Spacing="12">
+                <TextBlock Text="Tip: app-level theme resources live in App.xaml." />
+            </ui:SimpleStackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,32 @@
+<UserControl
+    x:Class="KPL_FE.Views.NavigationRootPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.modernwpf.com/2019">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Background="{DynamicResource NavigationViewExpandedPaneBackground}">
+            <ui:AutoSuggestBox
+          x:Name="SearchBox"
+          DockPanel.Dock="Top"
+          Margin="12"
+          PlaceholderText="Search"
+          QueryIcon="Find"
+          TextChanged="OnSearchTextChanged"
+          QuerySubmitted="OnSearchQuerySubmitted"/>
+
+            <ui:ListView
+          x:Name="PagesList"
+          DisplayMemberPath="Title"
+          SelectedValuePath="PageType"
+          SelectionChanged="PagesList_SelectionChanged"/>
+        </DockPanel>
+
+        <ui:Frame x:Name="RootFrame" Grid.Column="1" Navigated="RootFrame_Navigated"/>
+    </Grid>
+</UserControl>
