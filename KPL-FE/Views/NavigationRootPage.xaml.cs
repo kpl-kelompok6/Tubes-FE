@@ -1,7 +1,6 @@
 ﻿using KPL_FE.Models;
 using KPL_FE.ViewControllers;
 using KPL_FE.Views;
-using ModernWpf.Controls;
 using System;
 using System.Windows.Controls;
 using System.Windows.Navigation;
@@ -19,8 +18,13 @@ public partial class NavigationRootPage : UserControl
         _vc = new NavigationRootViewController(
             pages: new[]
             {
-                new PageItem("Theme Resources", typeof(ThemeResourcesPage)),
+                new PageItem("Menu", typeof(MenuPage)),
+                new PageItem("Transaction", typeof(TransactionPage)),
+                new PageItem("Payment", typeof(PaymentPage)),
+                new PageItem("History", typeof(HistoryPage)),
+                new PageItem("Settings", typeof(SettingsPage)),
                 new PageItem("Themes", typeof(ThemesPage)),
+                new PageItem("Theme Resources", typeof(ThemeResourcesPage)),
             });
 
         PagesList.ItemsSource = _vc.Pages;
@@ -39,18 +43,5 @@ public partial class NavigationRootPage : UserControl
     {
         _vc.OnRootFrameNavigated(e.Content);
         PagesList.SelectedValue = _vc.SelectedPageType;
-    }
-
-    private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-    {
-        sender.ItemsSource = _vc.OnSearchTextChanged(sender.Text, args.Reason);
-    }
-
-    private void OnSearchQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-    {
-        var t = _vc.OnSearchQuerySubmitted(args.ChosenSuggestion, args.QueryText);
-        if (t is null) return;
-
-        RootFrame.Navigate(t);
     }
 }

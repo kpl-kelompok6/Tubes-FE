@@ -1,7 +1,5 @@
 using KPL_FE.Models;
-using ModernWpf.Controls;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,44 +44,5 @@ public sealed class NavigationRootViewController
         _ignore = true;
         SelectedPageType = content?.GetType();
         _ignore = false;
-    }
-
-    public IEnumerable? OnSearchTextChanged(string? rawText, AutoSuggestionBoxTextChangeReason reason)
-    {
-        if (reason != AutoSuggestionBoxTextChangeReason.UserInput) return null;
-
-        var q = (rawText ?? "").Trim();
-        if (q.Length == 0) return null;
-
-        var tokens = q.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-        var matches = _pages
-            .Where(p => tokens.All(t => p.Title.IndexOf(t, StringComparison.CurrentCultureIgnoreCase) >= 0))
-            .OrderByDescending(p => p.Title.StartsWith(q, StringComparison.CurrentCultureIgnoreCase))
-            .ThenBy(p => p.Title)
-            .ToList();
-
-        return matches.Count > 0 ? matches : new[] { "No results found" };
-    }
-
-    public Type? OnSearchQuerySubmitted(object? chosenSuggestion, string? queryText)
-    {
-        if (chosenSuggestion is PageItem p)
-        {
-            SelectedPageType = p.PageType;
-            return p.PageType;
-        }
-
-        if (!string.IsNullOrWhiteSpace(queryText))
-        {
-            var exact = _pages.FirstOrDefault(x => x.Title.Equals(queryText, StringComparison.OrdinalIgnoreCase));
-            if (exact is not null)
-            {
-                SelectedPageType = exact.PageType;
-                return exact.PageType;
-            }
-        }
-
-        return null;
     }
 }

@@ -1,0 +1,9 @@
+<Page x:Class="KPL_FE.Views.MenuPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
+      Title="Menu">
+    <Grid Margin="24">
+        <TextBlock Text="Menu Page" FontSize="24" />
+    </Grid>
+</Page>

@@ -11,20 +11,12 @@
         </Grid.ColumnDefinitions>
 
         <DockPanel Background="{DynamicResource NavigationViewExpandedPaneBackground}">
-            <ui:AutoSuggestBox
-          x:Name="SearchBox"
-          DockPanel.Dock="Top"
-          Margin="12"
-          PlaceholderText="Search"
-          QueryIcon="Find"
-          TextChanged="OnSearchTextChanged"
-          QuerySubmitted="OnSearchQuerySubmitted"/>
-
             <ui:ListView
-          x:Name="PagesList"
-          DisplayMemberPath="Title"
-          SelectedValuePath="PageType"
-          SelectionChanged="PagesList_SelectionChanged"/>
+                x:Name="PagesList"
+                Margin="0,12,0,0"
+                DisplayMemberPath="Title"
+                SelectedValuePath="PageType"
+                SelectionChanged="PagesList_SelectionChanged" />
         </DockPanel>
 
         <ui:Frame x:Name="RootFrame" Grid.Column="1" Navigated="RootFrame_Navigated"/>
