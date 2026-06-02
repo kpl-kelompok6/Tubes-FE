@@ -35,4 +35,10 @@ public sealed class ConfigController
     }
 
     public bool Exists() => File.Exists(ConfigPath);
+
+    public void Delete()
+    {
+        if (File.Exists(ConfigPath))
+            File.Delete(ConfigPath);
+    }
 }

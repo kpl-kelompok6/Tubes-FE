@@ -16,9 +16,14 @@
                         <TextBlock x:Name="UrlDisplay" VerticalAlignment="Center" FontWeight="SemiBold" />
                     </StackPanel>
 
-                    <Button x:Name="EditButton" Click="EditButton_Click" MinWidth="120" Margin="0,12,0,0">
-                        Change URL
-                    </Button>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button x:Name="EditButton" Click="EditButton_Click" MinWidth="120" Margin="0,0,8,0">
+                            Change URL
+                        </Button>
+                        <Button x:Name="ResetButton" Click="ResetButton_Click" MinWidth="120">
+                            Reset Setup
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>
