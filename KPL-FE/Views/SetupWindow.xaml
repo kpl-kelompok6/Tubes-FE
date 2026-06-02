@@ -1,0 +1,39 @@
+<Window x:Class="KPL_FE.Views.SetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Setup - KPL POS"
+        Width="480" Height="260"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        ui:WindowHelper.UseModernWindowStyle="True">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Backend API Setup" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,4" />
+        <TextBlock Grid.Row="1" Text="Enter the URL of the POS backend API to connect to." Opacity="0.7" Margin="0,0,0,16" />
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Backend URL" Margin="0,0,0,4" />
+            <TextBox x:Name="UrlTextBox" Text="http://localhost:5146" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="CancelButton" Click="CancelButton_Click" MinWidth="100" Margin="0,0,8,0">
+                Cancel
+            </Button>
+            <Button x:Name="SaveButton"
+                    Click="SaveButton_Click" MinWidth="100"
+                    IsEnabled="False">
+                Save
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
