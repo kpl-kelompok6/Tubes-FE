@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         Title="Setup - KPL POS"
-        Width="480" Height="260"
+        Width="480" Height="280"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         ui:WindowHelper.UseModernWindowStyle="True">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -25,7 +26,9 @@
             <TextBox x:Name="UrlTextBox" Text="http://localhost:5146" />
         </StackPanel>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" TextWrapping="Wrap" />
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="CancelButton" Click="CancelButton_Click" MinWidth="100" Margin="0,0,8,0">
                 Cancel
             </Button>
