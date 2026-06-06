@@ -4,6 +4,28 @@
       xmlns:ui="http://schemas.modernwpf.com/2019"
       Title="Settings">
     <Grid Margin="24">
-        <TextBlock Text="Settings Page" FontSize="24" />
+        <StackPanel>
+            <TextBlock Text="Settings" FontSize="24" Margin="0,0,0,16" />
+
+            <Border Padding="16" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                <StackPanel>
+                    <TextBlock Text="Backend API" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="URL:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="UrlDisplay" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button x:Name="EditButton" Click="EditButton_Click" MinWidth="120" Margin="0,0,8,0">
+                            Change URL
+                        </Button>
+                        <Button x:Name="ResetButton" Click="ResetButton_Click" MinWidth="120">
+                            Reset Setup
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Page>
