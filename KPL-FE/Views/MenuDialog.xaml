@@ -3,9 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         Title="Tambah Menu"
-        Width="480" Height="420"
-        WindowStartupLocation="CenterScreen"
+        Width="480" Height="380"
+        MinWidth="400" MinHeight="300"
+        WindowStartupLocation="CenterOwner"
         ResizeMode="CanMinimize"
+        ShowInTaskbar="False"
         ui:WindowHelper.UseModernWindowStyle="True">
 
     <Grid Margin="24">
