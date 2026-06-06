@@ -23,7 +23,7 @@ namespace KPL_FE
 
             if (!Config.Exists())
             {
-                var setup = new SetupWindow { BaseUrl = config.BaseUrl, Owner = mainWindow };
+                var setup = new SetupWindow { BaseUrl = config.BaseUrl };
                 setup.ShowDialog();
 
                 if (!setup.Saved)
