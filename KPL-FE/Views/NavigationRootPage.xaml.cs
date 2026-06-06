@@ -23,8 +23,6 @@ public partial class NavigationRootPage : UserControl
                 new PageItem("Payment", typeof(PaymentPage)),
                 new PageItem("History", typeof(HistoryPage)),
                 new PageItem("Settings", typeof(SettingsPage)),
-                new PageItem("Themes", typeof(ThemesPage)),
-                new PageItem("Theme Resources", typeof(ThemeResourcesPage)),
             });
 
         PagesList.ItemsSource = _vc.Pages;
