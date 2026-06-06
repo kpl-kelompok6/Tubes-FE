@@ -19,10 +19,11 @@ namespace KPL_FE
             };
 
             var config = Config.Load();
+            var mainWindow = new MainWindow();
 
             if (!Config.Exists())
             {
-                var setup = new SetupWindow { BaseUrl = config.BaseUrl };
+                var setup = new SetupWindow { BaseUrl = config.BaseUrl, Owner = mainWindow };
                 setup.ShowDialog();
 
                 if (!setup.Saved)
@@ -36,8 +37,6 @@ namespace KPL_FE
             }
 
             BaseUrl = config.BaseUrl;
-
-            var mainWindow = new MainWindow();
             mainWindow.Show();
         }
     }
