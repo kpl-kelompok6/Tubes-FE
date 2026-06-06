@@ -79,6 +79,8 @@ public partial class MenuDialog : Window
         if (!decimal.TryParse(PriceBox.Text, out var price) || price <= 0)
         {
             ShowError("Harga harus berupa angka positif.");
+            SaveButton.IsEnabled = true;
+            CancelButton.IsEnabled = true;
             return;
         }
 
