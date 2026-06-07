@@ -261,7 +261,7 @@
                                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
                     </StackPanel>
                     <Button x:Name="PayButton" Grid.Column="1" Content="Bayar Sekarang" Height="42" Padding="20,0" 
-                            Style="{DynamicResource AccentButtonStyle}" FontSize="14" IsEnabled="False" />
+                            Style="{DynamicResource AccentButtonStyle}" FontSize="14" IsEnabled="False" Click="PayButton_Click" />
                 </Grid>
             </Grid>
         </Grid>

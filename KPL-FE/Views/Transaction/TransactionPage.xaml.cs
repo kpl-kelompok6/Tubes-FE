@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using KPL_FE.Views.Payment;
 
 namespace KPL_FE.Views;
 
@@ -325,6 +326,28 @@ public partial class TransactionPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal menghapus item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void PayButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTransaction == null) return;
+
+        var dialog = new PaymentDialog(_selectedTransaction)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true && dialog.Result != null)
+        {
+            MessageBox.Show($"Pembayaran berhasil! Kembalian: {dialog.Result.ChangeAmountFormatted}", "Sukses", MessageBoxButton.OK, MessageBoxImage.Information);
+            
+            // Clear selection because the transaction is paid (no longer in 'Created' state)
+            _selectedTransaction = null;
+            
+            // Refresh list (it will filter out the paid transaction)
+            await LoadTransactionsAsync();
+            RefreshUI();
         }
     }
 }
