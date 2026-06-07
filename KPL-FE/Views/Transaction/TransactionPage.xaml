@@ -131,11 +131,24 @@
                                         Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="12" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <StackPanel VerticalAlignment="Center">
+                                        <!-- Menu Thumbnail -->
+                                        <Border CornerRadius="6" Width="56" Height="56" ClipToBounds="True"
+                                                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                                            <Grid>
+                                                <TextBlock Text="🍽️" FontSize="20" HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" Opacity="0.3" />
+                                                <Image Source="{Binding ImageUrl}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                            </Grid>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
                                             <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" 
                                                        TextTrimming="CharacterEllipsis" MaxWidth="300" />
@@ -149,7 +162,7 @@
                                             </StackPanel>
                                         </StackPanel>
 
-                                        <Button Grid.Column="1" Content="+ Tambah" VerticalAlignment="Center"
+                                        <Button Grid.Column="3" Content="+ Tambah" VerticalAlignment="Center"
                                                 Tag="{Binding}" Click="AddMenuItemButton_Click"
                                                 Style="{DynamicResource AccentButtonStyle}" 
                                                 Padding="12,6" FontSize="12" />
