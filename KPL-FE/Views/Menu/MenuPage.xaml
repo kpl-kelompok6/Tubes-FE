@@ -89,9 +89,23 @@
                     <DataTemplate>
                         <Border Style="{StaticResource CardBorder}">
                             <StackPanel>
+                                <!-- Menu Image -->
+                                <Border CornerRadius="6" Height="140" Margin="0,0,0,8" ClipToBounds="True"
+                                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                                    <Grid>
+                                        <!-- Placeholder when no image -->
+                                        <TextBlock Text="🍽️" FontSize="36" HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" Opacity="0.3" />
+                                        <!-- Actual image -->
+                                        <Image Source="{Binding ImageUrl}" Stretch="UniformToFill"
+                                               RenderOptions.BitmapScalingMode="HighQuality" />
+                                    </Grid>
+                                </Border>
+
                                 <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
                                 <Border Margin="0,4,0,0" Padding="4,2" CornerRadius="4"
-                                        Background="{DynamicResource SystemControlHighlightAccentBrush}">
+                                        Background="{DynamicResource SystemControlHighlightAccentBrush}"
+                                        HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding Category}" FontSize="11" Foreground="White" />
                                 </Border>
                                 <TextBlock Text="{Binding PriceFormatted}" FontSize="20"

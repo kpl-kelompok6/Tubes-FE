@@ -50,6 +50,12 @@
                 </Grid>
 
                 <CheckBox x:Name="AvailableCheck" Content="Tersedia" Margin="0,12,0,0" IsChecked="True" />
+
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="URL Gambar" Margin="0,0,0,4" />
+                    <TextBox x:Name="ImageUrlBox" MaxLength="2048"
+                             ui:ControlHelper.PlaceholderText="https://contoh.com/gambar.jpg" />
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 

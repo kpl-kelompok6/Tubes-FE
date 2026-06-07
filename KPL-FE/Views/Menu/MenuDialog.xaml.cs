@@ -45,6 +45,11 @@ public partial class MenuDialog : Window
         get => AvailableCheck.IsChecked == true;
         set => AvailableCheck.IsChecked = value;
     }
+    public string? MenuImageUrl
+    {
+        get => string.IsNullOrWhiteSpace(ImageUrlBox.Text) ? null : ImageUrlBox.Text.Trim();
+        set => ImageUrlBox.Text = value ?? "";
+    }
 
     public MenuDialog()
     {
@@ -63,6 +68,7 @@ public partial class MenuDialog : Window
         MenuPrice = menu.Price;
         MenuCategory = menu.Category;
         MenuIsAvailable = menu.IsAvailable;
+        MenuImageUrl = menu.ImageUrl;
     }
 
     private void UpdateSaveButton()
@@ -91,6 +97,7 @@ public partial class MenuDialog : Window
             Price = price,
             Category = MenuCategory,
             IsAvailable = MenuIsAvailable,
+            ImageUrl = MenuImageUrl,
         };
 
         try
