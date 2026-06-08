@@ -2,6 +2,7 @@ using KPL_FE.Controllers;
 using KPL_FE.Models;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,6 +20,10 @@ public partial class TransactionPage : Page
     private List<MenuDto> _allMenus = [];
     private TransactionDto? _selectedTransaction;
     private bool _isRefreshing;
+    private bool _isLoadingTransactions;
+    private bool _isLoadingMenus;
+    private string? _transactionsLoadError;
+    private string? _menusLoadError;
 
     public TransactionPage()
     {
@@ -36,6 +41,10 @@ public partial class TransactionPage : Page
 
     private async Task LoadTransactionsAsync()
     {
+        _isLoadingTransactions = true;
+        _transactionsLoadError = null;
+        UpdateTransactionsState();
+
         try
         {
             var all = await _txApi.GetAllAsync();
@@ -44,12 +53,22 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal memuat transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _transactionsLoadError = GetFriendlyErrorMessage(ex, "transaksi");
+            UpdateTransactionsState();
+        }
+        finally
+        {
+            _isLoadingTransactions = false;
+            UpdateTransactionsState();
         }
     }
 
     private async Task LoadMenusAsync()
     {
+        _isLoadingMenus = true;
+        _menusLoadError = null;
+        UpdateMenuState();
+
         try
         {
             _allMenus = await _menuApi.GetAllAsync();
@@ -59,7 +78,13 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal memuat menu: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _menusLoadError = GetFriendlyErrorMessage(ex, "menu");
+            UpdateMenuState();
+        }
+        finally
+        {
+            _isLoadingMenus = false;
+            UpdateMenuState();
         }
     }
 
@@ -104,6 +129,7 @@ public partial class TransactionPage : Page
     {
         TransactionsListBox.ItemsSource = null;
         TransactionsListBox.ItemsSource = _transactions;
+        UpdateTransactionsState();
     }
 
     private void RefreshUI()
@@ -137,6 +163,65 @@ public partial class TransactionPage : Page
 
         EmptyCartText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         PayButton.IsEnabled = items.Count > 0;
+    }
+
+    private void UpdateTransactionsState()
+    {
+        var hasError = !string.IsNullOrWhiteSpace(_transactionsLoadError);
+        var isEmpty = !_isLoadingTransactions && !hasError && _transactions.Count == 0;
+
+        TransactionsLoadingPanel.Visibility = _isLoadingTransactions ? Visibility.Visible : Visibility.Collapsed;
+        TransactionsErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+        TransactionsEmptyPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            TransactionsErrorText.Text = _transactionsLoadError;
+        }
+    }
+
+    private void UpdateMenuState()
+    {
+        if (_selectedTransaction == null)
+        {
+            EmptyStatePanel.Visibility = Visibility.Visible;
+            MenuBrowserPanel.Visibility = Visibility.Collapsed;
+            MenuLoadingPanel.Visibility = Visibility.Collapsed;
+            MenuErrorPanel.Visibility = Visibility.Collapsed;
+            MenuEmptyPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        EmptyStatePanel.Visibility = Visibility.Collapsed;
+        MenuBrowserPanel.Visibility = Visibility.Visible;
+
+        var hasError = !string.IsNullOrWhiteSpace(_menusLoadError);
+        var currentFilter = FilterAll.IsChecked == true ? null
+                          : FilterMakanan.IsChecked == true ? "Makanan"
+                          : "Minuman";
+        var filteredCount = _allMenus.Count == 0
+            ? 0
+            : (currentFilter is null ? _allMenus.Count : _allMenus.Count(m => m.Category == currentFilter));
+        var isEmpty = !_isLoadingMenus && !hasError && filteredCount == 0;
+
+        MenuLoadingPanel.Visibility = _isLoadingMenus ? Visibility.Visible : Visibility.Collapsed;
+        MenuErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+        MenuEmptyPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            MenuErrorText.Text = _menusLoadError;
+            return;
+        }
+
+        if (isEmpty)
+        {
+            var noMatch = _allMenus.Count > 0;
+            MenuEmptyTitleText.Text = noMatch ? "Tidak ada hasil" : "Data Kosong";
+            MenuEmptyMessageText.Text = noMatch
+                ? "Tidak ada menu yang cocok dengan filter saat ini."
+                : "Belum ada menu tersedia.";
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -201,12 +286,6 @@ public partial class TransactionPage : Page
     {
         if (MenuItemsControl == null) return;
 
-        if (_allMenus.Count == 0)
-        {
-            MenuItemsControl.ItemsSource = null;
-            return;
-        }
-
         string? filter = FilterAll.IsChecked == true ? null
                         : FilterMakanan.IsChecked == true ? "Makanan"
                         : "Minuman";
@@ -216,6 +295,7 @@ public partial class TransactionPage : Page
             : _allMenus.Where(m => m.Category == filter).ToList();
 
         MenuItemsControl.ItemsSource = filtered;
+        UpdateMenuState();
     }
 
     private async void AddMenuItemButton_Click(object sender, RoutedEventArgs e)
@@ -349,5 +429,20 @@ public partial class TransactionPage : Page
             await LoadTransactionsAsync();
             RefreshUI();
         }
+    }
+
+    private async void RetryTransactionsButton_Click(object sender, RoutedEventArgs e) => await LoadTransactionsAsync();
+
+    private async void RetryMenusButton_Click(object sender, RoutedEventArgs e) => await LoadMenusAsync();
+
+    private static string GetFriendlyErrorMessage(Exception ex, string context)
+    {
+        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
+            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
+
+        if (ex is HttpRequestException)
+            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
+
+        return $"Gagal memuat {context}: {ex.Message}";
     }
 }

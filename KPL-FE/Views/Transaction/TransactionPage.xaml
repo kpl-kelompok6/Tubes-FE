@@ -32,60 +32,90 @@
                     Content="+ Transaksi Baru" HorizontalAlignment="Stretch" Margin="0,12,0,0" Height="38" 
                     Style="{DynamicResource AccentButtonStyle}" />
 
-            <ScrollViewer Grid.Row="2" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
-                <ListBox x:Name="TransactionsListBox" SelectionChanged="TransactionsListBox_SelectionChanged" 
-                         Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0,0,0,8" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border CornerRadius="8" Padding="12" BorderThickness="1"
-                                    BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    
-                                    <!-- Code and Status -->
+            <Grid Grid.Row="2" Margin="0,12,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ListBox x:Name="TransactionsListBox" SelectionChanged="TransactionsListBox_SelectionChanged" 
+                             Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,8" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="8" Padding="12" BorderThickness="1"
+                                        BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding DisplayCode}" FontWeight="Bold" FontSize="13" />
-                                        <Border Grid.Column="1" Padding="6,2" CornerRadius="4" Background="{DynamicResource SystemControlHighlightAccentBrush}">
-                                            <TextBlock Text="{Binding Status}" FontSize="10" Foreground="White" FontWeight="SemiBold" />
-                                        </Border>
-                                    </Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Code and Status -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding DisplayCode}" FontWeight="Bold" FontSize="13" />
+                                            <Border Grid.Column="1" Padding="6,2" CornerRadius="4" Background="{DynamicResource SystemControlHighlightAccentBrush}">
+                                                <TextBlock Text="{Binding Status}" FontSize="10" Foreground="White" FontWeight="SemiBold" />
+                                            </Border>
+                                        </Grid>
 
-                                    <!-- Customer & Table -->
-                                    <TextBlock Grid.Row="1" Text="{Binding SummaryText}" FontSize="13" FontWeight="SemiBold" Margin="0,4,0,0" />
+                                        <!-- Customer & Table -->
+                                        <TextBlock Grid.Row="1" Text="{Binding SummaryText}" FontSize="13" FontWeight="SemiBold" Margin="0,4,0,0" />
 
-                                    <!-- Total & Time -->
-                                    <Grid Grid.Row="2" Margin="0,4,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding TotalAmountFormatted}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding CreatedAt, StringFormat={}{0:HH:mm}}" Opacity="0.6" VerticalAlignment="Center" FontSize="11" />
+                                        <!-- Total & Time -->
+                                        <Grid Grid.Row="2" Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding TotalAmountFormatted}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding CreatedAt, StringFormat={}{0:HH:mm}}" Opacity="0.6" VerticalAlignment="Center" FontSize="11" />
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+
+                <Border x:Name="TransactionsLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <ui:ProgressRing Width="48" Height="48" IsActive="True" HorizontalAlignment="Center" />
+                        <TextBlock Text="Memuat transaksi..." Margin="0,12,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="TransactionsErrorPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                    <StackPanel>
+                        <TextBlock Text="Gagal memuat transaksi" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                        <TextBlock x:Name="TransactionsErrorText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                        <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryTransactionsButton_Click" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="TransactionsEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                    <StackPanel>
+                        <TextBlock Text="Data Kosong" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                        <TextBlock Text="Belum ada transaksi aktif." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
 
         <!-- ===== CENTER PANE: Menu Browser / Empty State ===== -->
@@ -122,43 +152,73 @@
                 </StackPanel>
 
                 <!-- Menu Items List -->
-                <ScrollViewer Grid.Row="2" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="MenuItemsControl">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border CornerRadius="8" Padding="12" Margin="0,0,0,8" BorderThickness="1"
-                                        BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                <Grid Grid.Row="2" Margin="0,12,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="MenuItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="8" Padding="12" Margin="0,0,0,8" BorderThickness="1"
+                                            BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" 
-                                                       TextTrimming="CharacterEllipsis" MaxWidth="300" />
-                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                                <TextBlock Text="{Binding PriceFormatted}" FontSize="14" FontWeight="Bold" 
-                                                           Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
-                                                <Border Padding="6,1" CornerRadius="4" Margin="8,0,0,0"
-                                                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
-                                                    <TextBlock Text="{Binding Category}" FontSize="10" Opacity="0.7" />
-                                                </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" 
+                                                           TextTrimming="CharacterEllipsis" MaxWidth="300" />
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding PriceFormatted}" FontSize="14" FontWeight="Bold" 
+                                                               Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                                    <Border Padding="6,1" CornerRadius="4" Margin="8,0,0,0"
+                                                            Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                                                        <TextBlock Text="{Binding Category}" FontSize="10" Opacity="0.7" />
+                                                    </Border>
+                                                </StackPanel>
                                             </StackPanel>
-                                        </StackPanel>
 
-                                        <Button Grid.Column="1" Content="+ Tambah" VerticalAlignment="Center"
-                                                Tag="{Binding}" Click="AddMenuItemButton_Click"
-                                                Style="{DynamicResource AccentButtonStyle}" 
-                                                Padding="12,6" FontSize="12" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                                            <Button Grid.Column="1" Content="+ Tambah" VerticalAlignment="Center"
+                                                    Tag="{Binding}" Click="AddMenuItemButton_Click"
+                                                    Style="{DynamicResource AccentButtonStyle}" 
+                                                    Padding="12,6" FontSize="12" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Border x:Name="MenuLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <ui:ProgressRing Width="48" Height="48" IsActive="True" HorizontalAlignment="Center" />
+                            <TextBlock Text="Memuat menu..." Margin="0,12,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="MenuErrorPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                        <StackPanel>
+                            <TextBlock Text="Gagal memuat menu" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                            <TextBlock x:Name="MenuErrorText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                            <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryMenusButton_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="MenuEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                        <StackPanel>
+                            <TextBlock x:Name="MenuEmptyTitleText" Text="Data Kosong" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                            <TextBlock x:Name="MenuEmptyMessageText" Text="Belum ada menu untuk ditampilkan." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
 

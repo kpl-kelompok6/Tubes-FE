@@ -8,7 +8,7 @@ namespace KPL_FE.Controllers;
 
 public sealed class PaymentApiController
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(15) };
     private static readonly JsonSerializerOptions _json = new()
     {
         PropertyNameCaseInsensitive = true
