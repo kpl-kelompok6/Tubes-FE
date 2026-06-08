@@ -1,5 +1,7 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using System;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,6 +11,8 @@ public partial class MenuPage : Page
 {
     private readonly MenuApiController _api = new();
     private List<MenuDto> _allMenus = [];
+    private bool _isLoading;
+    private string? _loadErrorMessage;
 
     public MenuPage()
     {
@@ -18,6 +22,10 @@ public partial class MenuPage : Page
 
     private async Task LoadMenus()
     {
+        _isLoading = true;
+        _loadErrorMessage = null;
+        UpdateState();
+
         try
         {
             _allMenus = await _api.GetAllAsync();
@@ -25,7 +33,13 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal memuat menu: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _loadErrorMessage = GetFriendlyErrorMessage(ex, "menu");
+            UpdateState();
+        }
+        finally
+        {
+            _isLoading = false;
+            UpdateState();
         }
     }
 
@@ -33,31 +47,35 @@ public partial class MenuPage : Page
 
     private void ApplyFilter()
     {
-        if (_allMenus.Count == 0) return;
+        if (MenuItemsControl == null)
+            return;
 
         var filter = FilterAll.IsChecked == true ? null
                     : FilterMakanan.IsChecked == true ? "Makanan"
                     : "Minuman";
 
-        MenuItemsControl.ItemsSource = filter is null
+        var filtered = filter is null
             ? _allMenus
             : _allMenus.Where(m => m.Category == filter).ToList();
+
+        MenuItemsControl.ItemsSource = filtered;
+        UpdateState(filtered.Count, filter);
     }
 
-    private void AddButton_Click(object sender, RoutedEventArgs e)
+    private async void AddButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new MenuDialog { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true)
-            _ = LoadMenus();
+            await LoadMenus();
     }
 
-    private void EditButton_Click(object sender, RoutedEventArgs e)
+    private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is not MenuDto menu) return;
 
         var dialog = new MenuDialog(menu) { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true)
-            _ = LoadMenus();
+            await LoadMenus();
     }
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -75,11 +93,50 @@ public partial class MenuPage : Page
         try
         {
             await _api.DeleteAsync(menu.Id);
-            _ = LoadMenus();
+            await LoadMenus();
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal menghapus: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadMenus();
+
+    private void UpdateState(int? visibleCount = null, string? filter = null)
+    {
+        var count = visibleCount ?? _allMenus.Count;
+        var hasError = !string.IsNullOrWhiteSpace(_loadErrorMessage);
+        var hasEmpty = !_isLoading && !hasError && count == 0;
+
+        LoadingOverlay.Visibility = _isLoading ? Visibility.Visible : Visibility.Collapsed;
+        ErrorStatePanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+        EmptyStatePanel.Visibility = hasEmpty ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            ErrorMessageText.Text = _loadErrorMessage;
+            return;
+        }
+
+        if (hasEmpty)
+        {
+            var filtered = filter is not null && _allMenus.Count > 0;
+            EmptyStateTitleText.Text = filtered ? "Tidak ada hasil" : "Data Kosong";
+            EmptyStateMessageText.Text = filtered
+                ? "Tidak ada menu yang cocok dengan kategori ini."
+                : "Belum ada menu tersedia.";
+        }
+    }
+
+    private static string GetFriendlyErrorMessage(Exception ex, string context)
+    {
+        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
+            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
+
+        if (ex is HttpRequestException)
+            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
+
+        return $"Gagal memuat {context}: {ex.Message}";
     }
 }
