@@ -33,6 +33,7 @@ public partial class LoginPage : Window
 
     private void ModeSwitch_Checked(object sender, RoutedEventArgs e)
     {
+        if (LoginPanel is null) return;
         var isLogin = ModeLogin.IsChecked == true;
         LoginPanel.Visibility = isLogin ? Visibility.Visible : Visibility.Collapsed;
         RegisterPanel.Visibility = isLogin ? Visibility.Collapsed : Visibility.Visible;
