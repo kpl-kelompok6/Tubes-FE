@@ -1,6 +1,7 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
 using System.Windows;
+using System.Windows.Media;
 
 namespace KPL_FE.Views;
 
@@ -27,7 +28,7 @@ public partial class LoginPage : Window
     private void UpdateRegisterButton()
     {
         RegisterButton.IsEnabled = !string.IsNullOrWhiteSpace(RegUsernameBox.Text)
-            && RegPasswordBox.SecurePassword.Length > 0
+            && RegPasswordBox.SecurePassword.Length >= 6
             && !string.IsNullOrWhiteSpace(RegDisplayNameBox.Text);
     }
 
@@ -37,7 +38,7 @@ public partial class LoginPage : Window
         var isLogin = ModeLogin.IsChecked == true;
         LoginPanel.Visibility = isLogin ? Visibility.Visible : Visibility.Collapsed;
         RegisterPanel.Visibility = isLogin ? Visibility.Collapsed : Visibility.Visible;
-        ErrorText.Text = "";
+        ClearStatus();
     }
 
     private string GetPassword(System.Windows.Controls.PasswordBox box)
@@ -56,7 +57,7 @@ public partial class LoginPage : Window
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         SetEnabled(false);
-        ErrorText.Text = "";
+        ClearStatus();
 
         var request = new LoginRequest
         {
@@ -75,7 +76,7 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            ErrorText.Text = $"Login gagal: {ex.Message}";
+            ShowError($"Login gagal: {ex.Message}");
             SetEnabled(true);
         }
     }
@@ -83,7 +84,14 @@ public partial class LoginPage : Window
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
         SetEnabled(false);
-        ErrorText.Text = "";
+        ClearStatus();
+
+        if (RegPasswordBox.SecurePassword.Length < 6)
+        {
+            ShowError("Registrasi gagal: Password minimal 6 karakter.");
+            SetEnabled(true);
+            return;
+        }
 
         var request = new RegisterRequest
         {
@@ -96,15 +104,18 @@ public partial class LoginPage : Window
         try
         {
             var api = new AuthApiController();
-            var response = await api.RegisterAsync(request);
-            ApplyAuth(response);
-            Saved = true;
-            DialogResult = true;
-            Close();
+            await api.RegisterAsync(request);
+
+            LoginUsernameBox.Text = request.Username;
+            LoginPasswordBox.Clear();
+            RegPasswordBox.Clear();
+            ModeLogin.IsChecked = true;
+            ShowSuccess("Akun berhasil dibuat. Silakan login.");
+            SetEnabled(true);
         }
         catch (Exception ex)
         {
-            ErrorText.Text = $"Registrasi gagal: {ex.Message}";
+            ShowError($"Registrasi gagal: {ex.Message}");
             SetEnabled(true);
         }
     }
@@ -119,11 +130,36 @@ public partial class LoginPage : Window
 
     private void SetEnabled(bool enabled)
     {
-        LoginButton.IsEnabled = enabled;
-        RegisterButton.IsEnabled = enabled;
         CancelButton.IsEnabled = enabled;
         ModeLogin.IsEnabled = enabled;
         ModeRegister.IsEnabled = enabled;
+
+        if (enabled)
+        {
+            UpdateLoginButton();
+            UpdateRegisterButton();
+            return;
+        }
+
+        LoginButton.IsEnabled = false;
+        RegisterButton.IsEnabled = false;
+    }
+
+    private void ClearStatus()
+    {
+        ErrorText.Text = "";
+    }
+
+    private void ShowError(string message)
+    {
+        ErrorText.Foreground = Brushes.Red;
+        ErrorText.Text = message;
+    }
+
+    private void ShowSuccess(string message)
+    {
+        ErrorText.Foreground = Brushes.Green;
+        ErrorText.Text = message;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
