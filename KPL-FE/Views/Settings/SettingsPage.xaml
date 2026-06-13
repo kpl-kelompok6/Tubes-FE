@@ -7,7 +7,29 @@
         <StackPanel>
             <TextBlock Text="Settings" FontSize="24" Margin="0,0,0,16" />
 
-            <Border Padding="16" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+            <!-- User Info -->
+            <Border Padding="16" Margin="0,0,0,12"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                <StackPanel>
+                    <TextBlock Text="User" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Name:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="DisplayNameText" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="Role:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="RoleText" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <Button x:Name="LogoutButton" Content="Logout" Click="LogoutButton_Click"
+                            MinWidth="120" Margin="0,12,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Backend API -->
+            <Border Padding="16"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
                 <StackPanel>
                     <TextBlock Text="Backend API" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
 

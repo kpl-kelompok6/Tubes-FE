@@ -1,0 +1,78 @@
+<Window x:Class="KPL_FE.Views.LoginPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Login - KPL POS"
+        Width="400" Height="480"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False"
+        ui:WindowHelper.UseModernWindowStyle="True">
+
+    <Grid Margin="32">
+        <StackPanel VerticalAlignment="Center">
+
+            <TextBlock Text="KPL POS" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" Margin="0,0,0,4" />
+            <TextBlock Text="Point of Sale System" FontSize="13" Opacity="0.6"
+                       HorizontalAlignment="Center" Margin="0,0,0,32" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+                <RadioButton x:Name="ModeLogin" GroupName="AuthMode" Content="Login"
+                             IsChecked="True" Checked="ModeSwitch_Checked"
+                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                             MinWidth="140" Padding="12,8" Cursor="Hand"
+                             Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                             BorderThickness="1" />
+                <RadioButton x:Name="ModeRegister" GroupName="AuthMode" Content="Register"
+                             Checked="ModeSwitch_Checked"
+                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                             MinWidth="140" Padding="12,8" Cursor="Hand"
+                             Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                             BorderThickness="1" />
+            </StackPanel>
+
+            <!-- Login Mode -->
+            <StackPanel x:Name="LoginPanel">
+                <TextBox x:Name="LoginUsernameBox" ui:ControlHelper.Header="Username"
+                         Margin="0,0,0,12" MaxLength="50" />
+                <PasswordBox x:Name="LoginPasswordBox" ui:ControlHelper.Header="Password"
+                             Margin="0,0,0,20" MaxLength="100" />
+
+                <Button x:Name="LoginButton" Content="Login"
+                        Style="{DynamicResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch" Height="40" FontSize="14"
+                        IsEnabled="False" Click="LoginButton_Click" />
+            </StackPanel>
+
+            <!-- Register Mode -->
+            <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
+                <TextBox x:Name="RegUsernameBox" ui:ControlHelper.Header="Username"
+                         Margin="0,0,0,12" MaxLength="50" />
+                <PasswordBox x:Name="RegPasswordBox" ui:ControlHelper.Header="Password"
+                             Margin="0,0,0,12" MaxLength="100" />
+                <TextBox x:Name="RegDisplayNameBox" ui:ControlHelper.Header="Display Name"
+                         Margin="0,0,0,12" MaxLength="100" />
+                <ComboBox x:Name="RegRoleCombo" ui:ControlHelper.Header="Role" Margin="0,0,0,20"
+                          SelectedIndex="0">
+                    <ComboBoxItem>Kasir</ComboBoxItem>
+                    <ComboBoxItem>Admin</ComboBoxItem>
+                </ComboBox>
+
+                <Button x:Name="RegisterButton" Content="Register"
+                        Style="{DynamicResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch" Height="40" FontSize="14"
+                        IsEnabled="False" Click="RegisterButton_Click" />
+            </StackPanel>
+
+            <TextBlock x:Name="ErrorText" Foreground="Red" TextWrapping="Wrap"
+                       Margin="0,12,0,0" TextAlignment="Center" />
+
+            <Button x:Name="CancelButton" Content="Cancel"
+                    HorizontalAlignment="Center" Margin="0,12,0,0"
+                    Click="CancelButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
