@@ -12,12 +12,14 @@ public sealed class AuthHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(App.Token))
+        var isAuthRequest = request.RequestUri?.AbsolutePath.Contains("/api/auth/", StringComparison.OrdinalIgnoreCase) == true;
+
+        if (!isAuthRequest && !string.IsNullOrEmpty(App.Token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
 
         var response = await base.SendAsync(request, cancellationToken);
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        if (!isAuthRequest && response.StatusCode == HttpStatusCode.Unauthorized)
         {
             var dispatcher = Application.Current.Dispatcher;
 
