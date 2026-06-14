@@ -1,5 +1,6 @@
-﻿using KPL_FE.Controllers;
+using KPL_FE.Controllers;
 using KPL_FE.Views;
+using System.Net.Http;
 using System.Windows;
 
 namespace KPL_FE
@@ -10,8 +11,21 @@ namespace KPL_FE
 
         public static string BaseUrl { get; internal set; } = "http://localhost:5146";
 
+        public static string? Token { get; set; }
+        public static int EmployeeId { get; set; }
+        public static string? DisplayName { get; set; }
+        public static string? Role { get; set; }
+
+        public static HttpClient ApiHttp { get; } = new(new AuthHandler())
+        {
+            Timeout = TimeSpan.FromSeconds(15)
+        };
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Prevent app from shutting down when the dialog windows (Setup or Login) close
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             DispatcherUnhandledException += (_, args) =>
             {
                 MessageBox.Show(args.Exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -19,7 +33,6 @@ namespace KPL_FE
             };
 
             var config = Config.Load();
-            var mainWindow = new MainWindow();
 
             if (!Config.Exists())
             {
@@ -37,6 +50,35 @@ namespace KPL_FE
             }
 
             BaseUrl = config.BaseUrl;
+
+            if (string.IsNullOrEmpty(config.Token))
+            {
+                var login = new LoginPage();
+                login.ShowDialog();
+
+                if (!login.Saved)
+                {
+                    Shutdown();
+                    return;
+                }
+
+                config.Token = Token;
+                config.EmployeeId = EmployeeId;
+                config.DisplayName = DisplayName;
+                config.Role = Role;
+                Config.Save(config);
+            }
+            else
+            {
+                Token = config.Token;
+                EmployeeId = config.EmployeeId;
+                DisplayName = config.DisplayName;
+                Role = config.Role;
+            }
+
+            var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            ShutdownMode = ShutdownMode.OnLastWindowClose; // Restore default behavior for MainWindow
             mainWindow.Show();
         }
     }

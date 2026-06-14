@@ -18,4 +18,7 @@ public sealed class MenuRequest
 
     [JsonPropertyName("isAvailable")]
     public bool IsAvailable { get; set; } = true;
+
+    [JsonPropertyName("imageUrl")]
+    public string? ImageUrl { get; set; }
 }

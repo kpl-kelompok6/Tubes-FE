@@ -46,6 +46,14 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
         </Style>
+
+        <Style x:Key="StateCard" TargetType="Border">
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundBaseMediumBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
     </Page.Resources>
 
     <Grid Margin="24">
@@ -78,37 +86,72 @@
             </Button>
         </Grid>
 
-        <ScrollViewer Grid.Row="2" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="MenuItemsControl">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{StaticResource CardBorder}">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <Border Margin="0,4,0,0" Padding="4,2" CornerRadius="4"
-                                        Background="{DynamicResource SystemControlHighlightAccentBrush}">
-                                    <TextBlock Text="{Binding Category}" FontSize="11" Foreground="White" />
-                                </Border>
-                                <TextBlock Text="{Binding PriceFormatted}" FontSize="20"
-                                           FontWeight="Bold" Margin="0,8,0,0" />
-                                <TextBlock Text="{Binding Description}" Opacity="0.7"
-                                           TextWrapping="Wrap" MaxHeight="40" Margin="0,4,0,0" />
-                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                    <Button Click="EditButton_Click" MinWidth="72" Margin="0,0,8,0"
-                                            Tag="{Binding}">Edit</Button>
-                                    <Button Click="DeleteButton_Click" MinWidth="72"
-                                            Tag="{Binding}">Hapus</Button>
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="MenuItemsControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <Border CornerRadius="6" Height="140" Margin="0,0,0,8" ClipToBounds="True"
+                                            Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                                        <Grid>
+                                            <TextBlock Text="🍽️" FontSize="36" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" Opacity="0.3" />
+                                            <Image Source="{Binding ImageUrl}" Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                        </Grid>
+                                    </Border>
+
+                                    <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <Border Margin="0,4,0,0" Padding="4,2" CornerRadius="4"
+                                            Background="{DynamicResource SystemControlHighlightAccentBrush}"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Category}" FontSize="11" Foreground="White" />
+                                    </Border>
+                                    <TextBlock Text="{Binding PriceFormatted}" FontSize="20"
+                                               FontWeight="Bold" Margin="0,8,0,0" />
+                                    <TextBlock Text="{Binding Description}" Opacity="0.7"
+                                               TextWrapping="Wrap" MaxHeight="40" Margin="0,4,0,0" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                        <Button Click="EditButton_Click" MinWidth="72" Margin="0,0,8,0"
+                                                Tag="{Binding}">Edit</Button>
+                                        <Button Click="DeleteButton_Click" MinWidth="72"
+                                                Tag="{Binding}">Hapus</Button>
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Border x:Name="LoadingOverlay" Style="{StaticResource StateCard}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                <StackPanel HorizontalAlignment="Center">
+                    <ui:ProgressRing Width="52" Height="52" IsActive="True" HorizontalAlignment="Center" />
+                    <TextBlock Text="Memuat data menu..." Margin="0,12,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="ErrorStatePanel" Style="{StaticResource StateCard}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" MaxWidth="420">
+                <StackPanel>
+                    <TextBlock Text="Gagal memuat menu" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                    <TextBlock x:Name="ErrorMessageText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextAlignment="Center" TextWrapping="Wrap" />
+                    <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryButton_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="EmptyStatePanel" Style="{StaticResource StateCard}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" MaxWidth="420">
+                <StackPanel>
+                    <TextBlock x:Name="EmptyStateTitleText" Text="Data Kosong" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                    <TextBlock x:Name="EmptyStateMessageText" Text="Belum ada menu tersedia." Margin="0,8,0,0" Opacity="0.75" TextAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

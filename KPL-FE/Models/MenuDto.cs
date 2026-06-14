@@ -28,5 +28,8 @@ public sealed class MenuDto
     [JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; init; }
 
+    [JsonPropertyName("imageUrl")]
+    public string? ImageUrl { get; init; }
+
     public string PriceFormatted => $"Rp{Price:N0}";
 }

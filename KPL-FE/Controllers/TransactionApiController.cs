@@ -9,7 +9,7 @@ namespace KPL_FE.Controllers;
 
 public sealed class TransactionApiController
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = App.ApiHttp;
     private static readonly JsonSerializerOptions _json = new()
     {
         PropertyNameCaseInsensitive = true
