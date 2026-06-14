@@ -24,12 +24,36 @@ public partial class SettingsPage : Page
         setup.Owner = Window.GetWindow(this);
         setup.ShowDialog();
 
-        if (setup.Saved)
+        if (!setup.Saved) return;
+
+        config.BaseUrl = setup.BaseUrl;
+        config.Token = null;
+        App.Config.Save(config);
+
+        App.BaseUrl = config.BaseUrl;
+        App.Token = null;
+        App.EmployeeId = 0;
+        App.DisplayName = null;
+        App.Role = null;
+        UrlDisplay.Text = config.BaseUrl;
+
+        var login = new LoginPage();
+        login.ShowDialog();
+
+        if (login.Saved)
         {
-            config.BaseUrl = setup.BaseUrl;
+            config.Token = App.Token;
+            config.EmployeeId = App.EmployeeId;
+            config.DisplayName = App.DisplayName;
+            config.Role = App.Role;
             App.Config.Save(config);
-            App.BaseUrl = config.BaseUrl;
-            UrlDisplay.Text = config.BaseUrl;
+
+            DisplayNameText.Text = App.DisplayName ?? "-";
+            RoleText.Text = App.Role ?? "-";
+        }
+        else
+        {
+            Application.Current.Shutdown();
         }
     }
 
@@ -44,7 +68,7 @@ public partial class SettingsPage : Page
         if (result != MessageBoxResult.Yes) return;
 
         App.Config.Delete();
-        App.BaseUrl = "http://localhost:5146";
+        App.BaseUrl = string.Empty;
         UrlDisplay.Text = App.BaseUrl;
 
         MessageBox.Show(
