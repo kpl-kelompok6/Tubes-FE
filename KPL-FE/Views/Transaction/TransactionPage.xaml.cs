@@ -13,6 +13,8 @@ namespace KPL_FE.Views;
 
 public partial class TransactionPage : Page
 {
+    internal static bool PendingNewTransaction;
+
     private readonly TransactionApiController _txApi = new();
     private readonly MenuApiController _menuApi = new();
 
@@ -32,7 +34,36 @@ public partial class TransactionPage : Page
         {
             await LoadTransactionsAsync();
             await LoadMenusAsync();
+            if (PendingNewTransaction)
+            {
+                PendingNewTransaction = false;
+                OpenNewTransactionDialog();
+            }
         };
+    }
+
+    public void TriggerNewTransaction()
+    {
+        OpenNewTransactionDialog();
+    }
+
+    private void OpenNewTransactionDialog()
+    {
+        var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
+        if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
+        {
+            _isRefreshing = true;
+            _ = LoadTransactionsAsync().ContinueWith(_ =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
+                    if (match != null)
+                        TransactionsListBox.SelectedItem = match;
+                    _isRefreshing = false;
+                });
+            });
+        }
     }
 
     // ──────────────────────────────────────────────

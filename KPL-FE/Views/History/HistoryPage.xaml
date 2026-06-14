@@ -3,7 +3,236 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.modernwpf.com/2019"
       Title="History">
+
     <Grid Margin="24">
-        <TextBlock Text="History Page" FontSize="24" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Riwayat Transaksi" FontSize="24" FontWeight="SemiBold" />
+            <Border CornerRadius="8" Padding="16" Margin="0,12,0,0"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Dari" FontSize="11" Opacity="0.6" Margin="0,0,0,4" />
+                        <DatePicker x:Name="StartDatePicker" Width="150" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Sampai" FontSize="11" Opacity="0.6" Margin="0,0,0,4" />
+                        <DatePicker x:Name="EndDatePicker" Width="150" />
+                    </StackPanel>
+
+                    <Button Grid.Column="4" x:Name="FilterButton" Content="Filter" Height="32"
+                            VerticalAlignment="Bottom" Padding="16,0"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            Click="FilterButton_Click" />
+
+                    <Button Grid.Column="6" x:Name="ResetFilterButton" Content="Reset" Height="32"
+                            VerticalAlignment="Bottom" Padding="16,0"
+                            Click="ResetFilterButton_Click" />
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="320" />
+            </Grid.ColumnDefinitions>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Daftar Transaksi" FontSize="18" FontWeight="SemiBold" />
+
+                <Grid Grid.Row="1" Margin="0,8,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ListBox x:Name="HistoryListBox" SelectionChanged="HistoryListBox_SelectionChanged"
+                                 Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,6" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="8" Padding="12" BorderThickness="1"
+                                            BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel VerticalAlignment="Center" MinWidth="80">
+                                                <TextBlock Text="{Binding DateFormatted}" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding TimeFormatted}" FontSize="11" Opacity="0.5" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TransactionCode, StringFormat=#{0}}" FontSize="13" FontWeight="Bold" />
+                                                <TextBlock Text="{Binding PaymentMethodDisplay}" FontSize="11" Opacity="0.6" Margin="0,2,0,0" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding TotalAmountFormatted}" FontSize="14" FontWeight="Bold"
+                                                       Foreground="{DynamicResource SystemControlHighlightAccentBrush}"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+
+                    <Border x:Name="HistoryLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <ui:ProgressRing Width="48" Height="48" IsActive="True" HorizontalAlignment="Center" />
+                            <TextBlock Text="Memuat riwayat..." Margin="0,12,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="HistoryErrorPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                        <StackPanel>
+                            <TextBlock Text="Gagal memuat riwayat" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                            <TextBlock x:Name="HistoryErrorText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                            <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryButton_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="HistoryEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}" MaxWidth="360">
+                        <StackPanel>
+                            <TextBlock Text="Data Kosong" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                            <TextBlock x:Name="HistoryEmptyText" Text="Belum ada riwayat transaksi." Margin="0,8,0,0" Opacity="0.75" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Ringkasan Laporan" FontSize="18" FontWeight="SemiBold" />
+
+                <ScrollViewer Grid.Row="1" Margin="0,8,0,0" VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <StackPanel>
+                            <Border CornerRadius="8" Padding="16" Margin="0,0,0,8"
+                                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Total Transaksi" FontSize="11" Opacity="0.6" />
+                                        <TextBlock x:Name="ReportTotalTxText" Grid.Column="1" Text="0" FontSize="22" FontWeight="Bold"
+                                                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                    </Grid>
+                                    <Grid Grid.Row="1" Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Total Pendapatan" FontSize="11" Opacity="0.6" />
+                                        <TextBlock x:Name="ReportRevenueText" Grid.Column="1" Text="Rp 0" FontSize="18" FontWeight="Bold"
+                                                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                    </Grid>
+                                    <Grid Grid.Row="2" Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Rata-rata / Transaksi" FontSize="11" Opacity="0.6" />
+                                        <TextBlock x:Name="ReportAverageText" Grid.Column="1" Text="Rp 0" FontSize="14" FontWeight="SemiBold" />
+                                    </Grid>
+                                    <Border Grid.Row="3" Margin="0,12,0,0" Height="1"
+                                            Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="Rincian Metode Pembayaran" FontSize="13" FontWeight="SemiBold" Margin="0,4,0,8" />
+
+                            <ItemsControl x:Name="BreakdownItemsControl">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="12,10" Margin="0,0,0,4" CornerRadius="6"
+                                                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding PaymentMethodDisplay}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="60" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Count, StringFormat={}{0} transaksi}" FontSize="12" Opacity="0.6" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                <TextBlock Grid.Column="2" Text="{Binding TotalFormatted}" FontSize="13" FontWeight="Bold"
+                                                           Foreground="{DynamicResource SystemControlHighlightAccentBrush}"
+                                                           VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Border x:Name="ReportLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Margin="0,24,0,0"
+                                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
+                                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <ui:ProgressRing Width="32" Height="32" IsActive="True" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Memuat laporan..." Margin="0,8,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="12" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="ReportEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Margin="0,24,0,0"
+                                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="16" BorderThickness="1"
+                                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="Belum ada data laporan" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" />
+                                    <TextBlock Text="Pilih rentang tanggal untuk melihat laporan." Margin="0,6,0,0" Opacity="0.6" FontSize="12" TextAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>
