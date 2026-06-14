@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
 using System.Net.Http;
 using System.Windows;
@@ -82,13 +83,8 @@ public partial class MenuPage : Page
     {
         if ((sender as FrameworkElement)?.Tag is not MenuDto menu) return;
 
-        var result = MessageBox.Show(
-            $"Hapus menu \"{menu.Name}\"?",
-            "Hapus Menu",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes) return;
+        var confirmed = await DialogService.ShowConfirm("Hapus Menu", $"Hapus menu \"{menu.Name}\"?");
+        if (!confirmed) return;
 
         try
         {
@@ -97,7 +93,7 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menghapus: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal menghapus: {ex.Message}");
         }
     }
 

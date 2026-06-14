@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -113,7 +114,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal memuat detail transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal memuat detail transaksi: {ex.Message}");
         }
         finally
         {
@@ -302,7 +303,7 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null)
         {
-            MessageBox.Show("Pilih transaksi terlebih dahulu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastService.ShowInfo("Pilih transaksi terlebih dahulu.");
             return;
         }
 
@@ -325,7 +326,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menambahkan item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal menambahkan item: {ex.Message}");
         }
         finally
         {
@@ -350,7 +351,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal mengubah jumlah: {ex.Message}");
         }
     }
 
@@ -374,7 +375,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal mengubah jumlah: {ex.Message}");
         }
     }
 
@@ -390,13 +391,8 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null) return;
 
-        var result = MessageBox.Show(
-            $"Hapus \"{item.MenuName}\" dari keranjang?",
-            "Hapus Item",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.Yes) return;
+        var confirmed = await DialogService.ShowConfirm("Hapus Item", $"Hapus \"{item.MenuName}\" dari keranjang?");
+        if (!confirmed) return;
 
         try
         {
@@ -405,7 +401,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menghapus item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal menghapus item: {ex.Message}");
         }
     }
 
@@ -420,7 +416,7 @@ public partial class TransactionPage : Page
 
         if (dialog.ShowDialog() == true && dialog.Result != null)
         {
-            MessageBox.Show($"Pembayaran berhasil! Kembalian: {dialog.Result.ChangeAmountFormatted}", "Sukses", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastService.ShowSuccess($"Pembayaran berhasil! Kembalian: {dialog.Result.ChangeAmountFormatted}");
             
             // Clear selection because the transaction is paid (no longer in 'Created' state)
             _selectedTransaction = null;

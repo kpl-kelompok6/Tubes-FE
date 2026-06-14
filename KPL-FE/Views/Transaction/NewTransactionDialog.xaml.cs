@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
 using System.Windows;
 
@@ -37,7 +38,7 @@ public partial class NewTransactionDialog : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal membuat transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await DialogService.ShowError("Error", $"Gagal membuat transaksi: {ex.Message}");
             
             CreateButton.IsEnabled = true;
             CancelButton.IsEnabled = true;

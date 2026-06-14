@@ -1,3 +1,4 @@
+using KPL_FE.Services;
 using KPL_FE.Views;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,36 +34,22 @@ public partial class SettingsPage : Page
         }
     }
 
-    private void ResetButton_Click(object sender, RoutedEventArgs e)
+    private async void ResetButton_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            "Reset backend URL? This will show the setup dialog on next launch.",
-            "Reset Setup",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes) return;
+        var confirmed = await DialogService.ShowConfirm("Reset Setup", "Reset backend URL? This will show the setup dialog on next launch.");
+        if (!confirmed) return;
 
         App.Config.Delete();
         App.BaseUrl = "http://localhost:5146";
         UrlDisplay.Text = App.BaseUrl;
 
-        MessageBox.Show(
-            "Reset complete. The setup dialog will appear on next launch.",
-            "Reset Setup",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        await DialogService.ShowInfo("Reset Setup", "Reset complete. The setup dialog will appear on next launch.");
     }
 
-    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    private async void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            "Logout and return to login screen?",
-            "Logout",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.Yes) return;
+        var confirmed = await DialogService.ShowConfirm("Logout", "Logout and return to login screen?");
+        if (!confirmed) return;
 
         var config = App.Config.Load();
         config.Token = null;
