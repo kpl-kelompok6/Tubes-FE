@@ -36,9 +36,25 @@ public sealed class AuthApiController
         var json = await resp.Content.ReadAsStringAsync();
         try
         {
-            var wrapper = JsonSerializer.Deserialize<ApiResponse<object>>(json, _json);
-            if (!string.IsNullOrWhiteSpace(wrapper?.Message))
-                throw new Exception(wrapper.Message);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
+            {
+                var first = errors.EnumerateArray()
+                    .Select(e => e.GetString())
+                    .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e));
+
+                if (!string.IsNullOrWhiteSpace(first))
+                    throw new Exception(first);
+            }
+
+            if (root.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String)
+            {
+                var value = message.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    throw new Exception(value);
+            }
         }
         catch (JsonException)
         {
