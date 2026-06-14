@@ -12,6 +12,8 @@ public partial class SettingsPage : Page
         Loaded += (_, _) =>
         {
             UrlDisplay.Text = App.BaseUrl;
+            DisplayNameText.Text = App.DisplayName ?? "-";
+            RoleText.Text = App.Role ?? "-";
         };
     }
 
@@ -50,5 +52,44 @@ public partial class SettingsPage : Page
             "Reset Setup",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "Logout and return to login screen?",
+            "Logout",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes) return;
+
+        var config = App.Config.Load();
+        config.Token = null;
+        App.Config.Save(config);
+
+        App.Token = null;
+        App.EmployeeId = 0;
+        App.DisplayName = null;
+        App.Role = null;
+
+        var login = new LoginPage();
+        login.ShowDialog();
+
+        if (login.Saved)
+        {
+            config.Token = App.Token;
+            config.EmployeeId = App.EmployeeId;
+            config.DisplayName = App.DisplayName;
+            config.Role = App.Role;
+            App.Config.Save(config);
+
+            DisplayNameText.Text = App.DisplayName ?? "-";
+            RoleText.Text = App.Role ?? "-";
+        }
+        else
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
     }
 }
