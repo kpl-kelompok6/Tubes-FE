@@ -1,8 +1,10 @@
-﻿using KPL_FE.Models;
+﻿using KPL_FE.Controllers;
+using KPL_FE.Models;
 using KPL_FE.ViewControllers;
 using KPL_FE.Views;
 using System;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Navigation;
 
 namespace KPL_FE.Views;
@@ -10,6 +12,7 @@ namespace KPL_FE.Views;
 public partial class NavigationRootPage : UserControl
 {
     private readonly NavigationRootViewController _vc;
+    private readonly KeyboardShortcutController _shortcuts;
 
     public NavigationRootPage()
     {
@@ -25,8 +28,36 @@ public partial class NavigationRootPage : UserControl
                 new PageItem("Settings", typeof(SettingsPage)),
             });
 
+        _shortcuts = new KeyboardShortcutController(RootFrame, () => _vc.SelectedPageType);
+
         PagesList.ItemsSource = _vc.Pages;
         PagesList.SelectedIndex = 0;
+    }
+
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled) return;
+
+        if (e.KeyboardDevice.Modifiers == ModifierKeys.Control && e.Key == Key.N)
+        {
+            e.Handled = true;
+            _shortcuts.HandleNewTransaction();
+            return;
+        }
+
+        if (e.KeyboardDevice.Modifiers == ModifierKeys.Control && e.Key == Key.F)
+        {
+            e.Handled = true;
+            _shortcuts.HandleFocusSearch();
+            return;
+        }
+
+        if (e.Key == Key.F5)
+        {
+            e.Handled = true;
+            _shortcuts.HandleRefresh();
+            return;
+        }
     }
 
     private void PagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
