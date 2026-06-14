@@ -9,7 +9,7 @@ namespace KPL_FE
     {
         public static ConfigController Config { get; } = new();
 
-        public static string BaseUrl { get; internal set; } = "http://localhost:5146";
+        public static string BaseUrl { get; internal set; } = string.Empty;
 
         public static string? Token { get; set; }
         public static int EmployeeId { get; set; }
@@ -31,7 +31,7 @@ namespace KPL_FE
 
             var config = Config.Load();
 
-            if (!Config.Exists())
+            if (string.IsNullOrEmpty(config.BaseUrl))
             {
                 var setup = new SetupWindow { BaseUrl = config.BaseUrl };
                 setup.ShowDialog();

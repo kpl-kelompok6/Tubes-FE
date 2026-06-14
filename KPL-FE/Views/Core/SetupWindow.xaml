@@ -23,7 +23,7 @@
 
         <StackPanel Grid.Row="2">
             <TextBlock Text="Backend URL" Margin="0,0,0,4" />
-            <TextBox x:Name="UrlTextBox" Text="http://localhost:5146" />
+            <TextBox x:Name="UrlTextBox" ui:ControlHelper.PlaceholderText="http://localhost:5146" />
         </StackPanel>
 
         <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" TextWrapping="Wrap" />
