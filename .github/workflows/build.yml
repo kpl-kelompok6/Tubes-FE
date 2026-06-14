@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -23,3 +26,10 @@ jobs:
         with:
           name: KPL-FE
           path: publish/
+
+      - run: dotnet publish KPL-FE/KPL-FE.csproj -c Release -o publish-single -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KPL-FE-single
+          path: publish-single/KPL-FE.exe
