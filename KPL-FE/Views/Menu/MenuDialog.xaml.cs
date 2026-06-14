@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System.Windows;
 using System.Windows.Media;
 
@@ -140,54 +141,10 @@ public partial class MenuDialog : Window
         Close();
     }
 
-    private void ShowError(string msg)
+    private async void ShowError(string msg)
     {
-        MessageDialog.Show("Error", msg, MessageDialogButton.OK);
+        await DialogService.ShowError("Error", msg);
     }
 
     private void UpdateImagePreview()
-    {
-        var url = ImageUrlBox.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            ShowPlaceholder();
-            return;
-        }
-
-        try
-        {
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uriResult) 
-                || (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
-            {
-                ShowPlaceholder();
-                return;
-            }
-
-            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = uriResult;
-            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
-
-            ImagePreview.Source = bitmap;
-            ImagePreview.Visibility = Visibility.Visible;
-            PlaceholderGrid.Visibility = Visibility.Collapsed;
-        }
-        catch
-        {
-            ShowPlaceholder();
-        }
-    }
-
-    private void ShowPlaceholder()
-    {
-        ImagePreview.Source = null;
-        ImagePreview.Visibility = Visibility.Collapsed;
-        PlaceholderGrid.Visibility = Visibility.Visible;
-    }
-
-    private void ImagePreview_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-    {
-        ShowPlaceholder();
-    }
 }

@@ -1,4 +1,5 @@
 using KPL_FE.Controllers;
+using KPL_FE.Services;
 using KPL_FE.Views;
 using ModernWpf;
 using System.Net.Http;
@@ -29,9 +30,9 @@ namespace KPL_FE
             // Prevent app from shutting down when the dialog windows (Setup or Login) close
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            DispatcherUnhandledException += (_, args) =>
+            DispatcherUnhandledException += async (_, args) =>
             {
-                MessageDialog.Show("Error", args.Exception.Message, MessageDialogButton.OK);
+                await DialogService.ShowError("Error", args.Exception.Message);
                 args.Handled = true;
             };
 

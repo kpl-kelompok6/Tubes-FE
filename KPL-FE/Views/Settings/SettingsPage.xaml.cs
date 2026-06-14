@@ -1,3 +1,4 @@
+using KPL_FE.Services;
 using KPL_FE.Views;
 using ModernWpf;
 using System.Windows;
@@ -30,7 +31,24 @@ public partial class SettingsPage : Page
 
         if (!setup.Saved) return;
 
-        config.BaseUrl = setup.BaseUrl;
+    private async void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+        var confirmed = await DialogService.ShowConfirm("Reset Setup", "Reset backend URL? This will show the setup dialog on next launch.");
+        if (!confirmed) return;
+
+        App.Config.Delete();
+        App.BaseUrl = "http://localhost:5146";
+        UrlDisplay.Text = App.BaseUrl;
+
+        await DialogService.ShowInfo("Reset Setup", "Reset complete. The setup dialog will appear on next launch.");
+    }
+
+    private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var confirmed = await DialogService.ShowConfirm("Logout", "Logout and return to login screen?");
+        if (!confirmed) return;
+
+        var config = App.Config.Load();
         config.Token = null;
         App.Config.Save(config);
 
@@ -54,63 +72,6 @@ public partial class SettingsPage : Page
 
             DisplayNameText.Text = App.DisplayName ?? "-";
             RoleText.Text = App.Role ?? "-";
-        }
-        else
-        {
-            Application.Current.Shutdown();
-        }
-    }
-
-    private void ResetButton_Click(object sender, RoutedEventArgs e)
-    {
-        var result = MessageDialog.Show(
-            "Atur Ulang",
-            "Atur ulang URL backend? Dialog pengaturan akan muncul pada peluncuran berikutnya.",
-            MessageDialogButton.YesNo);
-
-        if (result != MessageDialogResult.Yes) return;
-
-        App.Config.Delete();
-        App.BaseUrl = string.Empty;
-        UrlDisplay.Text = App.BaseUrl;
-
-        ToastNotificationService.Instance.ShowInfo("Atur ulang selesai. Dialog pengaturan akan muncul pada peluncuran berikutnya.");
-    }
-
-    private void LogoutButton_Click(object sender, RoutedEventArgs e)
-    {
-        var result = MessageDialog.Show(
-            "Keluar",
-            "Keluar dan kembali ke layar login?",
-            MessageDialogButton.YesNo);
-
-        if (result != MessageDialogResult.Yes) return;
-
-        var config = App.Config.Load();
-        config.Token = null;
-        App.Config.Save(config);
-
-        App.Token = null;
-        App.EmployeeId = 0;
-        App.DisplayName = null;
-        App.Role = null;
-
-        var mainWindow = Window.GetWindow(this);
-        mainWindow.Hide();
-
-        var login = new LoginPage();
-        if (login.ShowDialog() == true)
-        {
-            config.Token = App.Token;
-            config.EmployeeId = App.EmployeeId;
-            config.DisplayName = App.DisplayName;
-            config.Role = App.Role;
-            App.Config.Save(config);
-
-            var newMain = new MainWindow();
-            Application.Current.MainWindow = newMain;
-            newMain.Show();
-            mainWindow.Close();
         }
         else
         {
