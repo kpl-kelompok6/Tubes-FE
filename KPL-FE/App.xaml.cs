@@ -1,4 +1,4 @@
-﻿using KPL_FE.Controllers;
+using KPL_FE.Controllers;
 using KPL_FE.Views;
 using System.Net.Http;
 using System.Windows;
@@ -23,6 +23,9 @@ namespace KPL_FE
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Prevent app from shutting down when the dialog windows (Setup or Login) close
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             DispatcherUnhandledException += (_, args) =>
             {
                 MessageBox.Show(args.Exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -74,6 +77,8 @@ namespace KPL_FE
             }
 
             var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            ShutdownMode = ShutdownMode.OnLastWindowClose; // Restore default behavior for MainWindow
             mainWindow.Show();
         }
     }

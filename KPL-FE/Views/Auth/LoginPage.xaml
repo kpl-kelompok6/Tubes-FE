@@ -3,76 +3,122 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         Title="Login - KPL POS"
-        Width="400" Height="480"
+        Width="400" Height="600"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False"
         ui:WindowHelper.UseModernWindowStyle="True">
 
-    <Grid Margin="32">
-        <StackPanel VerticalAlignment="Center">
+    <Window.Resources>
+        <!-- Segmented Control Radio Button Style -->
+        <Style x:Key="ModeRadio" TargetType="RadioButton">
+            <Setter Property="Padding" Value="0,8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Root" CornerRadius="6" Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsChecked" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-            <TextBlock Text="KPL POS" FontSize="28" FontWeight="Bold"
-                       HorizontalAlignment="Center" Margin="0,0,0,4" />
-            <TextBlock Text="Point of Sale System" FontSize="13" Opacity="0.6"
-                       HorizontalAlignment="Center" Margin="0,0,0,32" />
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="32,24" VerticalAlignment="Center">
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,20">
-                <RadioButton x:Name="ModeLogin" GroupName="AuthMode" Content="Login"
-                             IsChecked="True" Checked="ModeSwitch_Checked"
-                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                             MinWidth="140" Padding="12,8" Cursor="Hand"
-                             Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                             BorderThickness="1" />
-                <RadioButton x:Name="ModeRegister" GroupName="AuthMode" Content="Register"
-                             Checked="ModeSwitch_Checked"
-                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                             MinWidth="140" Padding="12,8" Cursor="Hand"
-                             Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                             BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                             BorderThickness="1" />
-            </StackPanel>
+                <TextBlock Text="KPL POS" FontSize="28" FontWeight="Bold"
+                           HorizontalAlignment="Center" Margin="0,0,0,4" />
+                <TextBlock Text="Point of Sale System" FontSize="13" Opacity="0.6"
+                           HorizontalAlignment="Center" Margin="0,0,0,24" />
 
-            <!-- Login Mode -->
-            <StackPanel x:Name="LoginPanel">
-                <TextBox x:Name="LoginUsernameBox" ui:ControlHelper.Header="Username"
-                         Margin="0,0,0,12" MaxLength="50" />
-                <PasswordBox x:Name="LoginPasswordBox" ui:ControlHelper.Header="Password"
-                             Margin="0,0,0,20" MaxLength="100" />
+                <!-- Segmented Control Wrapper -->
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" 
+                        CornerRadius="8" Padding="4" Margin="0,0,0,24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <RadioButton x:Name="ModeLogin" GroupName="AuthMode" Content="Login"
+                                     IsChecked="True" Checked="ModeSwitch_Checked"
+                                     Style="{StaticResource ModeRadio}" Grid.Column="0" />
+                        
+                        <RadioButton x:Name="ModeRegister" GroupName="AuthMode" Content="Register"
+                                     Checked="ModeSwitch_Checked"
+                                     Style="{StaticResource ModeRadio}" Grid.Column="1" />
+                    </Grid>
+                </Border>
 
-                <Button x:Name="LoginButton" Content="Login"
-                        Style="{DynamicResource AccentButtonStyle}"
-                        HorizontalAlignment="Stretch" Height="40" FontSize="14"
-                        IsEnabled="False" Click="LoginButton_Click" />
-            </StackPanel>
+                <!-- Login Mode -->
+                <StackPanel x:Name="LoginPanel">
+                    <TextBox x:Name="LoginUsernameBox" ui:ControlHelper.Header="Username"
+                             Margin="0,0,0,12" MaxLength="50" />
+                    <PasswordBox x:Name="LoginPasswordBox" ui:ControlHelper.Header="Password"
+                                 Margin="0,0,0,20" MaxLength="100" />
 
-            <!-- Register Mode -->
-            <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
-                <TextBox x:Name="RegUsernameBox" ui:ControlHelper.Header="Username"
-                         Margin="0,0,0,12" MaxLength="50" />
-                <PasswordBox x:Name="RegPasswordBox" ui:ControlHelper.Header="Password"
+                    <Button x:Name="LoginButton" Content="Login"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch" Height="40" FontSize="14"
+                            IsEnabled="False" Click="LoginButton_Click" />
+                </StackPanel>
+
+                <!-- Register Mode -->
+                <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
+                    <TextBox x:Name="RegUsernameBox" ui:ControlHelper.Header="Username"
+                             Margin="0,0,0,12" MaxLength="50" />
+                    <PasswordBox x:Name="RegPasswordBox" ui:ControlHelper.Header="Password"
+                                 Margin="0,0,0,12" MaxLength="100" />
+                    <TextBox x:Name="RegDisplayNameBox" ui:ControlHelper.Header="Display Name"
                              Margin="0,0,0,12" MaxLength="100" />
-                <TextBox x:Name="RegDisplayNameBox" ui:ControlHelper.Header="Display Name"
-                         Margin="0,0,0,12" MaxLength="100" />
-                <ComboBox x:Name="RegRoleCombo" ui:ControlHelper.Header="Role" Margin="0,0,0,20"
-                          SelectedIndex="0">
-                    <ComboBoxItem>Kasir</ComboBoxItem>
-                    <ComboBoxItem>Admin</ComboBoxItem>
-                </ComboBox>
+                    <ComboBox x:Name="RegRoleCombo" ui:ControlHelper.Header="Role" Margin="0,0,0,20"
+                              HorizontalAlignment="Stretch" SelectedIndex="0">
+                        <ComboBoxItem>Kasir</ComboBoxItem>
+                        <ComboBoxItem>Admin</ComboBoxItem>
+                    </ComboBox>
 
-                <Button x:Name="RegisterButton" Content="Register"
-                        Style="{DynamicResource AccentButtonStyle}"
-                        HorizontalAlignment="Stretch" Height="40" FontSize="14"
-                        IsEnabled="False" Click="RegisterButton_Click" />
+                    <Button x:Name="RegisterButton" Content="Register"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch" Height="40" FontSize="14"
+                            IsEnabled="False" Click="RegisterButton_Click" />
+                </StackPanel>
+
+                <TextBlock x:Name="ErrorText" Foreground="Red" TextWrapping="Wrap"
+                           Margin="0,12,0,0" TextAlignment="Center" Height="36" />
+
+                <Button x:Name="CancelButton" Content="Cancel"
+                        HorizontalAlignment="Center" Margin="0,8,0,0"
+                        Click="CancelButton_Click" />
             </StackPanel>
-
-            <TextBlock x:Name="ErrorText" Foreground="Red" TextWrapping="Wrap"
-                       Margin="0,12,0,0" TextAlignment="Center" />
-
-            <Button x:Name="CancelButton" Content="Cancel"
-                    HorizontalAlignment="Center" Margin="0,12,0,0"
-                    Click="CancelButton_Click" />
-        </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>

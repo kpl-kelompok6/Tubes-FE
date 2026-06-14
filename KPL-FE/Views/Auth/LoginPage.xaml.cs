@@ -12,11 +12,11 @@ public partial class LoginPage : Window
     public LoginPage()
     {
         InitializeComponent();
-        LoginUsernameBox.TextChanged += (_, _) => UpdateLoginButton();
-        LoginPasswordBox.PasswordChanged += (_, _) => UpdateLoginButton();
-        RegUsernameBox.TextChanged += (_, _) => UpdateRegisterButton();
-        RegPasswordBox.PasswordChanged += (_, _) => UpdateRegisterButton();
-        RegDisplayNameBox.TextChanged += (_, _) => UpdateRegisterButton();
+        LoginUsernameBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
+        LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
+        RegUsernameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
+        RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
+        RegDisplayNameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
     }
 
     private void UpdateLoginButton()
@@ -28,7 +28,7 @@ public partial class LoginPage : Window
     private void UpdateRegisterButton()
     {
         RegisterButton.IsEnabled = !string.IsNullOrWhiteSpace(RegUsernameBox.Text)
-            && RegPasswordBox.SecurePassword.Length >= 6
+            && RegPasswordBox.SecurePassword.Length > 0
             && !string.IsNullOrWhiteSpace(RegDisplayNameBox.Text);
     }
 
@@ -83,21 +83,37 @@ public partial class LoginPage : Window
 
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
-        SetEnabled(false);
         ClearStatus();
 
-        if (RegPasswordBox.SecurePassword.Length < 6)
+        var username = RegUsernameBox.Text.Trim();
+        var displayName = RegDisplayNameBox.Text.Trim();
+        var password = GetPassword(RegPasswordBox);
+
+        if (string.IsNullOrWhiteSpace(username))
         {
-            ShowError("Registrasi gagal: Password minimal 6 karakter.");
-            SetEnabled(true);
+            ShowError("Registrasi gagal: Username tidak boleh kosong.");
             return;
         }
 
+        if (password.Length < 6)
+        {
+            ShowError("Registrasi gagal: Password minimal 6 karakter.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            ShowError("Registrasi gagal: Display Name tidak boleh kosong.");
+            return;
+        }
+
+        SetEnabled(false);
+
         var request = new RegisterRequest
         {
-            Username = RegUsernameBox.Text.Trim(),
-            Password = GetPassword(RegPasswordBox),
-            DisplayName = RegDisplayNameBox.Text.Trim(),
+            Username = username,
+            Password = password,
+            DisplayName = displayName,
             Role = (RegRoleCombo.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "Kasir"
         };
 
