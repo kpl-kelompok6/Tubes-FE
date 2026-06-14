@@ -33,3 +33,21 @@ jobs:
         with:
           name: KPL-FE-single
           path: publish-single/KPL-FE.exe
+
+      - name: Zip multi-file build
+        run: Compress-Archive -Path publish/* -DestinationPath KPL-FE-${{ github.sha }}.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Build #${{ github.run_number }}
+          body: |
+            Auto-built from commit `${{ github.sha }}`
+          files: |
+            KPL-FE-${{ github.sha }}.zip
+            publish-single/KPL-FE.exe
+          generate_release_notes: false
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
