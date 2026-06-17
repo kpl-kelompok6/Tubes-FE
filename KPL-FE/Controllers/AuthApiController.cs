@@ -1,75 +1,12 @@
 using KPL_FE.Models;
-using System.Net.Http;
-using System.Text.Json;
 
 namespace KPL_FE.Controllers;
 
 public sealed class AuthApiController
 {
-    private static readonly JsonSerializerOptions _json = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private string Url(string path) => $"{App.BaseUrl.TrimEnd('/')}/api/{path}";
-
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
-    {
-        var body = JsonSerializer.Serialize(request, _json);
-        var resp = await App.ApiHttp.PostAsync(Url("auth/login"), new StringContent(body, null, "application/json"));
-        await EnsureSuccessAsync(resp);
-        return await ParseDataAsync<LoginResponse>(resp);
-    }
+        => await App.Api.PostAsync<LoginResponse>("auth/login", request);
 
     public async Task<LoginResponse> RegisterAsync(RegisterRequest request)
-    {
-        var body = JsonSerializer.Serialize(request, _json);
-        var resp = await App.ApiHttp.PostAsync(Url("auth/register"), new StringContent(body, null, "application/json"));
-        await EnsureSuccessAsync(resp);
-        return await ParseDataAsync<LoginResponse>(resp);
-    }
-
-    private static async Task EnsureSuccessAsync(HttpResponseMessage resp)
-    {
-        if (resp.IsSuccessStatusCode) return;
-
-        var json = await resp.Content.ReadAsStringAsync();
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
-            {
-                var first = errors.EnumerateArray()
-                    .Select(e => e.GetString())
-                    .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e));
-
-                if (!string.IsNullOrWhiteSpace(first))
-                    throw new Exception(first);
-            }
-
-            if (root.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String)
-            {
-                var value = message.GetString();
-                if (!string.IsNullOrWhiteSpace(value))
-                    throw new Exception(value);
-            }
-        }
-        catch (JsonException)
-        {
-            // Fall through to the generic HTTP error below.
-        }
-
-        throw new Exception($"Server returned {(int)resp.StatusCode} {resp.ReasonPhrase}");
-    }
-
-    private static async Task<T> ParseDataAsync<T>(HttpResponseMessage resp)
-    {
-        var json = await resp.Content.ReadAsStringAsync();
-        var wrapper = JsonSerializer.Deserialize<ApiResponse<T>>(json, _json);
-        if (wrapper is null || !wrapper.Success)
-            throw new Exception(wrapper?.Message ?? "Gagal memuat data dari server.");
-        return wrapper.Data!;
-    }
+        => await App.Api.PostAsync<LoginResponse>("auth/register", request);
 }
