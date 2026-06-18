@@ -45,6 +45,8 @@ public partial class MenuPage : Page
 
     private void Filter_Checked(object sender, RoutedEventArgs e) => ApplyFilter();
 
+    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
+
     private void ApplyFilter()
     {
         if (MenuItemsControl == null)
@@ -54,12 +56,15 @@ public partial class MenuPage : Page
                     : FilterMakanan.IsChecked == true ? "Makanan"
                     : "Minuman";
 
-        var filtered = filter is null
-            ? _allMenus
-            : _allMenus.Where(m => m.Category == filter).ToList();
+        var searchText = SearchTextBox.Text.Trim();
+
+        var filtered = _allMenus
+            .Where(m => filter is null || m.Category == filter)
+            .Where(m => string.IsNullOrWhiteSpace(searchText) || m.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         MenuItemsControl.ItemsSource = filtered;
-        UpdateState(filtered.Count, filter);
+        UpdateState(filtered.Count, filter, searchText);
     }
 
     private async void AddButton_Click(object sender, RoutedEventArgs e)
@@ -103,7 +108,7 @@ public partial class MenuPage : Page
 
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadMenus();
 
-    private void UpdateState(int? visibleCount = null, string? filter = null)
+    private void UpdateState(int? visibleCount = null, string? filter = null, string? searchText = null)
     {
         var count = visibleCount ?? _allMenus.Count;
         var hasError = !string.IsNullOrWhiteSpace(_loadErrorMessage);
@@ -121,10 +126,10 @@ public partial class MenuPage : Page
 
         if (hasEmpty)
         {
-            var filtered = filter is not null && _allMenus.Count > 0;
+            var filtered = (filter is not null || !string.IsNullOrWhiteSpace(searchText)) && _allMenus.Count > 0;
             EmptyStateTitleText.Text = filtered ? "Tidak ada hasil" : "Data Kosong";
             EmptyStateMessageText.Text = filtered
-                ? "Tidak ada menu yang cocok dengan kategori ini."
+                ? "Tidak ada menu yang cocok dengan pencarian atau kategori saat ini."
                 : "Belum ada menu tersedia.";
         }
     }
