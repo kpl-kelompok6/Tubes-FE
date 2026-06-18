@@ -18,8 +18,10 @@ namespace KPL_FE
 
         public static HttpClient ApiHttp { get; } = new(new AuthHandler())
         {
-            Timeout = TimeSpan.FromSeconds(15)
+            Timeout = TimeSpan.FromSeconds(10)
         };
+
+        public static ApiClient Api { get; } = new(ApiHttp);
 
         protected override void OnStartup(StartupEventArgs e)
         {
