@@ -60,12 +60,22 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBlock Text="Menu" FontSize="24" FontWeight="SemiBold" />
 
         <Grid Grid.Row="1" Margin="0,12,0,0">
+            <TextBox x:Name="SearchTextBox"
+                     Width="420"
+                     MaxWidth="420"
+                     HorizontalAlignment="Left"
+                     ui:ControlHelper.PlaceholderText="Cari menu berdasarkan nama..."
+                     TextChanged="SearchTextBox_TextChanged" />
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,12,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -86,7 +96,7 @@
             </Button>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="0,16,0,0">
+        <Grid Grid.Row="3" Margin="0,16,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="MenuItemsControl">
                     <ItemsControl.ItemsPanel>
