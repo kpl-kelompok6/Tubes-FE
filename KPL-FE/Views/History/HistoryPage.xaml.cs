@@ -78,7 +78,7 @@ public partial class HistoryPage : Page
         catch
         {
             _report = null;
-            UpdateReportState();
+            UpdateReportUI();
         }
         finally
         {
@@ -121,11 +121,22 @@ public partial class HistoryPage : Page
     {
         ReportLoadingPanel.Visibility = _isLoadingReport ? Visibility.Visible : Visibility.Collapsed;
         ReportEmptyPanel.Visibility = !_isLoadingReport && _report == null ? Visibility.Visible : Visibility.Collapsed;
+        BreakdownEmptyPanel.Visibility = !_isLoadingReport && _report != null && _report.Breakdown.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void UpdateReportUI()
     {
-        if (_report == null) return;
+        if (_report == null)
+        {
+            ReportTotalTxText.Text = "0";
+            ReportRevenueText.Text = "Rp 0";
+            ReportAverageText.Text = "Rp 0";
+            BreakdownItemsControl.ItemsSource = null;
+            UpdateReportState();
+            return;
+        }
 
         ReportTotalTxText.Text = _report.TotalTransactions.ToString("N0");
         ReportRevenueText.Text = _report.TotalRevenueFormatted;

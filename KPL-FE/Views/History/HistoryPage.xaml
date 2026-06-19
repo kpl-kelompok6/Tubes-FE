@@ -212,6 +212,11 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
+                            <Border x:Name="BreakdownEmptyPanel" Visibility="Collapsed" Padding="12" Margin="0,0,0,4" CornerRadius="6"
+                                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                <TextBlock Text="Belum ada rincian metode pembayaran." FontSize="12" Opacity="0.65" TextAlignment="Center" TextWrapping="Wrap" />
+                            </Border>
+
                             <Border x:Name="ReportLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Margin="0,24,0,0"
                                     Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="12" Padding="20" BorderThickness="1"
                                     BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
