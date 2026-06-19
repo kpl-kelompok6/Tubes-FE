@@ -79,14 +79,12 @@ public partial class MenuDialog : Window
 
     private async void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        SaveButton.IsEnabled = false;
-        CancelButton.IsEnabled = false;
+        SetSaving(true);
 
         if (!decimal.TryParse(PriceBox.Text, out var price) || price <= 0)
         {
             ShowError("Harga harus berupa angka positif.");
-            SaveButton.IsEnabled = true;
-            CancelButton.IsEnabled = true;
+            SetSaving(false);
             return;
         }
 
@@ -116,9 +114,23 @@ public partial class MenuDialog : Window
         catch (Exception ex)
         {
             ShowError($"Gagal menyimpan: {ex.Message}");
-            SaveButton.IsEnabled = true;
-            CancelButton.IsEnabled = true;
+            SetSaving(false);
         }
+    }
+
+    private void SetSaving(bool isSaving)
+    {
+        SaveButton.IsEnabled = !isSaving;
+        CancelButton.IsEnabled = !isSaving;
+        NameBox.IsEnabled = !isSaving;
+        DescBox.IsEnabled = !isSaving;
+        PriceBox.IsEnabled = !isSaving;
+        CategoryCombo.IsEnabled = !isSaving;
+        AvailableCheck.IsEnabled = !isSaving;
+        ImageUrlBox.IsEnabled = !isSaving;
+        SavingPanel.Visibility = isSaving ? Visibility.Visible : Visibility.Collapsed;
+        if (SavingPanel.Children[0] is ModernWpf.Controls.ProgressRing ring)
+            ring.IsActive = isSaving;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)

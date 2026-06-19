@@ -345,6 +345,7 @@ public partial class TransactionPage : Page
 
         try
         {
+            SetOperationLoading(true);
             var request = new AddItemRequest
             {
                 MenuId = menu.Id,
@@ -360,6 +361,7 @@ public partial class TransactionPage : Page
         }
         finally
         {
+            SetOperationLoading(false);
             if (button != null) button.IsEnabled = true;
         }
     }
@@ -375,6 +377,7 @@ public partial class TransactionPage : Page
 
         try
         {
+            SetOperationLoading(true);
             var request = new UpdateItemRequest { Quantity = item.Quantity + 1 };
             await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
             await RefreshSelectedTransactionAsync();
@@ -382,6 +385,10 @@ public partial class TransactionPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            SetOperationLoading(false);
         }
     }
 
@@ -399,6 +406,7 @@ public partial class TransactionPage : Page
 
         try
         {
+            SetOperationLoading(true);
             var request = new UpdateItemRequest { Quantity = item.Quantity - 1 };
             await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
             await RefreshSelectedTransactionAsync();
@@ -406,6 +414,10 @@ public partial class TransactionPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            SetOperationLoading(false);
         }
     }
 
@@ -431,6 +443,7 @@ public partial class TransactionPage : Page
 
         try
         {
+            SetOperationLoading(true);
             await _txApi.RemoveItemAsync(_selectedTransaction.Id, item.Id);
             await RefreshSelectedTransactionAsync();
         }
@@ -438,6 +451,16 @@ public partial class TransactionPage : Page
         {
             MessageBox.Show($"Gagal menghapus item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+        finally
+        {
+            SetOperationLoading(false);
+        }
+    }
+
+    private void SetOperationLoading(bool isLoading)
+    {
+        OperationLoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+        OperationLoadingRing.IsActive = isLoading;
     }
 
     private async void PayButton_Click(object sender, RoutedEventArgs e)

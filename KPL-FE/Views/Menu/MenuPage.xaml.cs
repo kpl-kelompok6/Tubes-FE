@@ -97,12 +97,19 @@ public partial class MenuPage : Page
 
         try
         {
+            _isLoading = true;
+            UpdateState();
             await _api.DeleteAsync(menu.Id);
             await LoadMenus();
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal menghapus: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            UpdateState();
         }
     }
 
