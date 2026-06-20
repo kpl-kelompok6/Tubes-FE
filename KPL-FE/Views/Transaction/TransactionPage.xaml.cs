@@ -49,22 +49,28 @@ public partial class TransactionPage : Page
         OpenNewTransactionDialog();
     }
 
-    private void OpenNewTransactionDialog()
+    private async void OpenNewTransactionDialog()
     {
         var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
         {
-            _isRefreshing = true;
-            _ = LoadTransactionsAsync().ContinueWith(_ =>
+            try
             {
-                Dispatcher.Invoke(() =>
-                {
-                    var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
-                    if (match != null)
-                        TransactionsListBox.SelectedItem = match;
-                    _isRefreshing = false;
-                });
-            });
+                _isRefreshing = true;
+                await LoadTransactionsAsync();
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
+
+            // By doing this after _isRefreshing is false, the SelectionChanged
+            // event will trigger and fetch the transaction details properly.
+            var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
+            if (match != null)
+            {
+                TransactionsListBox.SelectedItem = match;
+            }
         }
     }
 
@@ -143,6 +149,7 @@ public partial class TransactionPage : Page
             {
                 TransactionsListBox.SelectedItem = match;
             }
+            await Task.Delay(50); // Yield to allow WPF to handle layout/selection
         }
         finally
         {
@@ -257,27 +264,9 @@ public partial class TransactionPage : Page
     // Transaction List Events
     // ──────────────────────────────────────────────
 
-    private async void NewTransactionButton_Click(object sender, RoutedEventArgs e)
+    private void NewTransactionButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
-        if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
-        {
-            _isRefreshing = true;
-            try
-            {
-                await LoadTransactionsAsync();
-
-                var newTx = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
-                if (newTx != null)
-                {
-                    TransactionsListBox.SelectedItem = newTx;
-                }
-            }
-            finally
-            {
-                _isRefreshing = false;
-            }
-        }
+        OpenNewTransactionDialog();
     }
 
     private async void TransactionsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

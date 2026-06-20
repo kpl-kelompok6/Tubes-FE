@@ -46,4 +46,18 @@ public sealed class TransactionDto
     public string TotalAmountFormatted => $"Rp {TotalAmount:N0}";
     public string SummaryText => string.IsNullOrEmpty(CustomerName) ? $"Meja {TableNumber ?? "-"}" : $"{CustomerName} (Meja {TableNumber ?? "-"})";
     public string DisplayCode => $"#{TransactionCode}";
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is TransactionDto other)
+        {
+            return Id == other.Id;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }

@@ -14,32 +14,21 @@ public partial class LoginPage : Window
         InitializeComponent();
         LoginUsernameBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
         LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
-        LoginPasswordTextBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); LoginPasswordBox.Password = LoginPasswordTextBox.Text; };
-        LoginPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
-        LoginPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
         RegUsernameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
         RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
-        RegPasswordTextBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); RegPasswordBox.Password = RegPasswordTextBox.Text; };
-        RegPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
-        RegPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
         RegDisplayNameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
     }
 
     private void UpdateLoginButton()
     {
-        var hasPassword = LoginPasswordTextBox.Visibility == Visibility.Visible
-            ? !string.IsNullOrEmpty(LoginPasswordTextBox.Text)
-            : LoginPasswordBox.SecurePassword.Length > 0;
-        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text) && hasPassword;
+        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text)
+            && LoginPasswordBox.SecurePassword.Length > 0;
     }
 
     private void UpdateRegisterButton()
     {
-        var hasPassword = RegPasswordTextBox.Visibility == Visibility.Visible
-            ? !string.IsNullOrEmpty(RegPasswordTextBox.Text)
-            : RegPasswordBox.SecurePassword.Length > 0;
         RegisterButton.IsEnabled = !string.IsNullOrWhiteSpace(RegUsernameBox.Text)
-            && hasPassword
+            && RegPasswordBox.SecurePassword.Length > 0
             && !string.IsNullOrWhiteSpace(RegDisplayNameBox.Text);
     }
 
@@ -49,6 +38,20 @@ public partial class LoginPage : Window
         var isLogin = ModeLogin.IsChecked == true;
         LoginPanel.Visibility = isLogin ? Visibility.Visible : Visibility.Collapsed;
         RegisterPanel.Visibility = isLogin ? Visibility.Collapsed : Visibility.Visible;
+
+        // Workaround: After the layout pass completes, force PasswordBox to
+        // re-evaluate its visual state so the reveal button appears correctly.
+        var targetBox = isLogin ? LoginPasswordBox : RegPasswordBox;
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var saved = targetBox.Password;
+            if (!string.IsNullOrEmpty(saved))
+            {
+                targetBox.Password = "";
+                targetBox.Password = saved;
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
+
         ClearStatus();
     }
 
@@ -65,43 +68,44 @@ public partial class LoginPage : Window
         }
     }
 
-    private string GetActivePassword(System.Windows.Controls.PasswordBox box, System.Windows.Controls.TextBox textBox)
-    {
-        if (textBox.Visibility == Visibility.Visible)
-            return textBox.Text;
-        return GetPassword(box);
-    }
-
-    private static void TogglePasswordVisibility(System.Windows.Controls.PasswordBox passwordBox, System.Windows.Controls.TextBox textBox, System.Windows.Controls.Primitives.ToggleButton toggle)
-    {
-        if (toggle.IsChecked == true)
-        {
-            textBox.Text = passwordBox.Password;
-            passwordBox.Visibility = Visibility.Collapsed;
-            textBox.Visibility = Visibility.Visible;
-            textBox.Focus();
-            textBox.SelectionStart = textBox.Text.Length;
-            toggle.ToolTip = "Sembunyikan password";
-        }
-        else
-        {
-            passwordBox.Password = textBox.Text;
-            passwordBox.Visibility = Visibility.Visible;
-            textBox.Visibility = Visibility.Collapsed;
-            passwordBox.Focus();
-            toggle.ToolTip = "Tampilkan password";
-        }
-    }
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        SetEnabled(false);
         ClearStatus();
+
+        var username = LoginUsernameBox.Text.Trim();
+        var password = GetPassword(LoginPasswordBox);
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            ShowError("Login gagal: Username tidak boleh kosong.");
+            return;
+        }
+
+        if (username.Length < 3)
+        {
+            ShowError("Login gagal: Username minimal 3 karakter.");
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z0-9]+$"))
+        {
+            ShowError("Login gagal: Username hanya boleh terdiri dari huruf dan angka.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            ShowError("Login gagal: Password tidak boleh kosong.");
+            return;
+        }
+
+        SetEnabled(false);
 
         var request = new LoginRequest
         {
-            Username = LoginUsernameBox.Text.Trim(),
-            Password = GetActivePassword(LoginPasswordBox, LoginPasswordTextBox)
+            Username = username,
+            Password = password
         };
 
         try
@@ -126,11 +130,23 @@ public partial class LoginPage : Window
 
         var username = RegUsernameBox.Text.Trim();
         var displayName = RegDisplayNameBox.Text.Trim();
-        var password = GetActivePassword(RegPasswordBox, RegPasswordTextBox);
+        var password = GetPassword(RegPasswordBox);
 
         if (string.IsNullOrWhiteSpace(username))
         {
             ShowError("Registrasi gagal: Username tidak boleh kosong.");
+            return;
+        }
+
+        if (username.Length < 3)
+        {
+            ShowError("Registrasi gagal: Username minimal 3 karakter.");
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z0-9]+$"))
+        {
+            ShowError("Registrasi gagal: Username hanya boleh terdiri dari huruf dan angka.");
             return;
         }
 
@@ -163,9 +179,7 @@ public partial class LoginPage : Window
 
             LoginUsernameBox.Text = request.Username;
             LoginPasswordBox.Clear();
-            LoginPasswordTextBox.Clear();
             RegPasswordBox.Clear();
-            RegPasswordTextBox.Clear();
             ModeLogin.IsChecked = true;
             ShowSuccess("Akun berhasil dibuat. Silakan login.");
             SetEnabled(true);
