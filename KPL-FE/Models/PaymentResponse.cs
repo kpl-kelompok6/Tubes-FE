@@ -17,4 +17,14 @@ public sealed class PaymentResponse
     public string TotalAmountFormatted => $"Rp {TotalAmount:N0}";
     public string PaidAmountFormatted => $"Rp {PaidAmount:N0}";
     public string ChangeAmountFormatted => $"Rp {ChangeAmount:N0}";
+    public string DateFormatted => CreatedAt.ToString("dd/MM/yyyy");
+    public string TimeFormatted => CreatedAt.ToString("HH:mm");
+    public string PaymentMethodDisplay => PaymentMethod switch
+    {
+        "Cash" => "Tunai",
+        "Debit" => "Debit",
+        "QRIS" => "QRIS",
+        "Transfer" => "Transfer",
+        _ => PaymentMethod
+    };
 }
