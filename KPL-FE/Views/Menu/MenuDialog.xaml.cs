@@ -142,7 +142,7 @@ public partial class MenuDialog : Window
 
     private void ShowError(string msg)
     {
-        MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageDialog.Show("Error", msg, MessageDialogButton.OK);
     }
 
     private void UpdateImagePreview()

@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Views;
+using ModernWpf;
 using System.Net.Http;
 using System.Windows;
 
@@ -30,7 +31,7 @@ namespace KPL_FE
 
             DispatcherUnhandledException += (_, args) =>
             {
-                MessageBox.Show(args.Exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageDialog.Show("Error", args.Exception.Message, MessageDialogButton.OK);
                 args.Handled = true;
             };
 
@@ -52,6 +53,15 @@ namespace KPL_FE
             }
 
             BaseUrl = config.BaseUrl;
+
+            if (config.AppTheme is not null)
+            {
+                ThemeManager.Current.ApplicationTheme = config.AppTheme switch
+                {
+                    "Dark" => ApplicationTheme.Dark,
+                    _ => ApplicationTheme.Light
+                };
+            }
 
             if (string.IsNullOrEmpty(config.Token))
             {

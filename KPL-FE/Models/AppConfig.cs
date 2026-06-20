@@ -7,4 +7,5 @@ public sealed class AppConfig
     public int EmployeeId { get; set; }
     public string? DisplayName { get; set; }
     public string? Role { get; set; }
+    public string? AppTheme { get; set; }
 }

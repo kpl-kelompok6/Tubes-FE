@@ -1,4 +1,5 @@
 using KPL_FE.Views;
+using ModernWpf;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -14,6 +15,9 @@ public partial class SettingsPage : Page
             UrlDisplay.Text = App.BaseUrl;
             DisplayNameText.Text = App.DisplayName ?? "-";
             RoleText.Text = App.Role ?? "-";
+
+            var config = App.Config.Load();
+            ThemeToggle.IsOn = config.AppTheme == "Dark";
         };
     }
 
@@ -59,34 +63,28 @@ public partial class SettingsPage : Page
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            "Reset backend URL? This will show the setup dialog on next launch.",
-            "Reset Setup",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+        var result = MessageDialog.Show(
+            "Atur Ulang",
+            "Atur ulang URL backend? Dialog pengaturan akan muncul pada peluncuran berikutnya.",
+            MessageDialogButton.YesNo);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageDialogResult.Yes) return;
 
         App.Config.Delete();
         App.BaseUrl = string.Empty;
         UrlDisplay.Text = App.BaseUrl;
 
-        MessageBox.Show(
-            "Reset complete. The setup dialog will appear on next launch.",
-            "Reset Setup",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        ToastNotificationService.Instance.ShowInfo("Atur ulang selesai. Dialog pengaturan akan muncul pada peluncuran berikutnya.");
     }
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            "Logout and return to login screen?",
-            "Logout",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
+        var result = MessageDialog.Show(
+            "Keluar",
+            "Keluar dan kembali ke layar login?",
+            MessageDialogButton.YesNo);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageDialogResult.Yes) return;
 
         var config = App.Config.Load();
         config.Token = null;
@@ -118,5 +116,14 @@ public partial class SettingsPage : Page
         {
             Application.Current.Shutdown();
         }
+    }
+
+    private void ThemeToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        ThemeManager.Current.ApplicationTheme = ThemeToggle.IsOn ? ApplicationTheme.Dark : ApplicationTheme.Light;
+
+        var config = App.Config.Load();
+        config.AppTheme = ThemeToggle.IsOn ? "Dark" : "Light";
+        App.Config.Save(config);
     }
 }

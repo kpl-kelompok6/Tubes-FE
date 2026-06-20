@@ -34,7 +34,7 @@ public partial class NewTransactionDialog : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal membuat transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageDialog.Show("Error", $"Gagal membuat transaksi: {ex.Message}", MessageDialogButton.OK);
             SetCreating(false);
         }
     }
