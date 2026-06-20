@@ -55,7 +55,7 @@ public partial class PaymentDialog : Window
     {
         if (!decimal.TryParse(PaidAmountTextBox.Text, out decimal paidAmount)) return;
 
-        SubmitButton.IsEnabled = false;
+        SetProcessing(true);
         try
         {
             var req = new PaymentRequest
@@ -73,8 +73,18 @@ public partial class PaymentDialog : Window
         {
             ErrorText.Text = ex.Message;
             ErrorText.Visibility = Visibility.Visible;
-            SubmitButton.IsEnabled = true;
+            SetProcessing(false);
         }
+    }
+
+    private void SetProcessing(bool isProcessing)
+    {
+        SubmitButton.IsEnabled = !isProcessing;
+        CancelButton.IsEnabled = !isProcessing;
+        PaidAmountTextBox.IsEnabled = !isProcessing;
+        PaymentLoadingPanel.Visibility = isProcessing ? Visibility.Visible : Visibility.Collapsed;
+        if (PaymentLoadingPanel.Children[0] is ModernWpf.Controls.ProgressRing ring)
+            ring.IsActive = isProcessing;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)

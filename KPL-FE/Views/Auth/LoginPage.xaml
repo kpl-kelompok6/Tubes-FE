@@ -83,8 +83,22 @@
                 <StackPanel x:Name="LoginPanel">
                     <TextBox x:Name="LoginUsernameBox" ui:ControlHelper.Header="Username"
                              Margin="0,0,0,12" MaxLength="50" />
-                    <PasswordBox x:Name="LoginPasswordBox" ui:ControlHelper.Header="Password"
-                                 Margin="0,0,0,20" MaxLength="100" />
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Password" FontSize="13" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <PasswordBox x:Name="LoginPasswordBox" MaxLength="100" />
+                                <TextBox x:Name="LoginPasswordTextBox" MaxLength="100" Visibility="Collapsed" />
+                            </Grid>
+                            <ToggleButton x:Name="LoginPasswordToggle" Grid.Column="1" Width="30" Height="30" Margin="4,0,0,0"
+                                          Content="👁" FontSize="14" ToolTip="Tampilkan password" />
+                        </Grid>
+                    </StackPanel>
 
                     <Button x:Name="LoginButton" Content="Login"
                             Style="{DynamicResource AccentButtonStyle}"
@@ -96,8 +110,22 @@
                 <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
                     <TextBox x:Name="RegUsernameBox" ui:ControlHelper.Header="Username"
                              Margin="0,0,0,12" MaxLength="50" />
-                    <PasswordBox x:Name="RegPasswordBox" ui:ControlHelper.Header="Password"
-                                 Margin="0,0,0,12" MaxLength="100" />
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="Password" FontSize="13" Margin="0,0,0,4"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <PasswordBox x:Name="RegPasswordBox" MaxLength="100" />
+                                <TextBox x:Name="RegPasswordTextBox" MaxLength="100" Visibility="Collapsed" />
+                            </Grid>
+                            <ToggleButton x:Name="RegPasswordToggle" Grid.Column="1" Width="30" Height="30" Margin="4,0,0,0"
+                                          Content="👁" FontSize="14" ToolTip="Tampilkan password" />
+                        </Grid>
+                    </StackPanel>
                     <TextBox x:Name="RegDisplayNameBox" ui:ControlHelper.Header="Display Name"
                              Margin="0,0,0,12" MaxLength="100" />
                     <ComboBox x:Name="RegRoleCombo" ui:ControlHelper.Header="Role" Margin="0,0,0,20"
@@ -114,6 +142,11 @@
 
                 <TextBlock x:Name="ErrorText" Foreground="Red" TextWrapping="Wrap"
                            Margin="0,12,0,0" TextAlignment="Center" Height="36" />
+
+                <StackPanel x:Name="AuthLoadingPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0" Visibility="Collapsed">
+                    <ui:ProgressRing x:Name="AuthLoadingRing" Width="24" Height="24" IsActive="False" />
+                    <TextBlock Text="Memproses..." Margin="8,0,0,0" VerticalAlignment="Center" Opacity="0.75" />
+                </StackPanel>
 
                 <Button x:Name="CancelButton" Content="Cancel"
                         HorizontalAlignment="Center" Margin="0,8,0,0"

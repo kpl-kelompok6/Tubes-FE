@@ -31,6 +31,10 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <StackPanel x:Name="CreatingPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" Visibility="Collapsed">
+                <ui:ProgressRing Width="20" Height="20" IsActive="False" />
+                <TextBlock Text="Membuat..." Margin="8,0,0,0" VerticalAlignment="Center" Opacity="0.75" />
+            </StackPanel>
             <Button x:Name="CancelButton" Click="CancelButton_Click" MinWidth="90" Margin="0,0,8,0">
                 Batal
             </Button>

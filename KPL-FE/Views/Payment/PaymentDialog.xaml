@@ -27,6 +27,10 @@
             <TextBlock x:Name="ChangeAmountText" Text="Rp 0" FontSize="18" FontWeight="SemiBold" Foreground="Green"/>
             
             <TextBlock x:Name="ErrorText" Foreground="Red" Margin="0,16,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+            <StackPanel x:Name="PaymentLoadingPanel" Orientation="Horizontal" Margin="0,16,0,0" Visibility="Collapsed">
+                <ui:ProgressRing Width="20" Height="20" IsActive="False" />
+                <TextBlock Text="Memproses pembayaran..." Margin="8,0,0,0" VerticalAlignment="Center" Opacity="0.75" />
+            </StackPanel>
         </StackPanel>
 
         <Grid Grid.Row="3" Margin="0,24,0,0">
@@ -35,7 +39,7 @@
                 <ColumnDefinition Width="8"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Content="Batal" Click="CancelButton_Click" HorizontalAlignment="Stretch" />
+            <Button x:Name="CancelButton" Content="Batal" Click="CancelButton_Click" HorizontalAlignment="Stretch" />
             <Button x:Name="SubmitButton" Grid.Column="2" Content="Bayar Sekarang" Click="SubmitButton_Click" 
                     HorizontalAlignment="Stretch" Style="{StaticResource AccentButtonStyle}" IsEnabled="False" />
         </Grid>

@@ -19,6 +19,7 @@ public partial class HistoryPage : Page
     private bool _isLoadingHistories;
     private bool _isLoadingReport;
     private string? _historiesLoadError;
+    private string? _reportLoadError;
 
     public HistoryPage()
     {
@@ -66,6 +67,7 @@ public partial class HistoryPage : Page
     private async Task LoadReportAsync()
     {
         _isLoadingReport = true;
+        _reportLoadError = null;
         UpdateReportState();
 
         try
@@ -75,10 +77,11 @@ public partial class HistoryPage : Page
             _report = await _historyApi.GetReportAsync(start, end);
             UpdateReportUI();
         }
-        catch
+        catch (Exception ex)
         {
             _report = null;
-            UpdateReportState();
+            _reportLoadError = GetFriendlyErrorMessage(ex, "laporan");
+            UpdateReportUI();
         }
         finally
         {
@@ -119,13 +122,31 @@ public partial class HistoryPage : Page
 
     private void UpdateReportState()
     {
+        var hasError = !string.IsNullOrWhiteSpace(_reportLoadError);
         ReportLoadingPanel.Visibility = _isLoadingReport ? Visibility.Visible : Visibility.Collapsed;
-        ReportEmptyPanel.Visibility = !_isLoadingReport && _report == null ? Visibility.Visible : Visibility.Collapsed;
+        ReportErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+        ReportEmptyPanel.Visibility = !_isLoadingReport && !hasError && _report == null ? Visibility.Visible : Visibility.Collapsed;
+        BreakdownEmptyPanel.Visibility = !_isLoadingReport && !hasError && _report != null && _report.Breakdown.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            ReportErrorText.Text = _reportLoadError;
+        }
     }
 
     private void UpdateReportUI()
     {
-        if (_report == null) return;
+        if (_report == null)
+        {
+            ReportTotalTxText.Text = "0";
+            ReportRevenueText.Text = "Rp 0";
+            ReportAverageText.Text = "Rp 0";
+            BreakdownItemsControl.ItemsSource = null;
+            UpdateReportState();
+            return;
+        }
 
         ReportTotalTxText.Text = _report.TotalTransactions.ToString("N0");
         ReportRevenueText.Text = _report.TotalRevenueFormatted;
@@ -163,6 +184,8 @@ public partial class HistoryPage : Page
     }
 
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
+
+    private async void RetryReportButton_Click(object sender, RoutedEventArgs e) => await LoadReportAsync();
 
     private static string GetFriendlyErrorMessage(Exception ex, string context)
     {
