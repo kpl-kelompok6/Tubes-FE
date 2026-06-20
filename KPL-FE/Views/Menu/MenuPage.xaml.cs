@@ -13,6 +13,8 @@ public partial class MenuPage : Page
     private List<MenuDto> _allMenus = [];
     private bool _isLoading;
     private string? _loadErrorMessage;
+    private string? _operationErrorMessage;
+    private MenuDto? _pendingDeleteMenu;
 
     public MenuPage()
     {
@@ -45,6 +47,8 @@ public partial class MenuPage : Page
 
     private void Filter_Checked(object sender, RoutedEventArgs e) => ApplyFilter();
 
+    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
+
     private void ApplyFilter()
     {
         if (MenuItemsControl == null)
@@ -54,12 +58,15 @@ public partial class MenuPage : Page
                     : FilterMakanan.IsChecked == true ? "Makanan"
                     : "Minuman";
 
-        var filtered = filter is null
-            ? _allMenus
-            : _allMenus.Where(m => m.Category == filter).ToList();
+        var searchText = SearchTextBox.Text.Trim();
+
+        var filtered = _allMenus
+            .Where(m => filter is null || m.Category == filter)
+            .Where(m => string.IsNullOrWhiteSpace(searchText) || m.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         MenuItemsControl.ItemsSource = filtered;
-        UpdateState(filtered.Count, filter);
+        UpdateState(filtered.Count, filter, searchText);
     }
 
     private async void AddButton_Click(object sender, RoutedEventArgs e)
@@ -82,28 +89,55 @@ public partial class MenuPage : Page
     {
         if ((sender as FrameworkElement)?.Tag is not MenuDto menu) return;
 
-        var result = MessageBox.Show(
-            $"Hapus menu \"{menu.Name}\"?",
-            "Hapus Menu",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+        await DeleteMenuAsync(menu, confirm: true);
+    }
 
-        if (result != MessageBoxResult.Yes) return;
+    private async Task DeleteMenuAsync(MenuDto menu, bool confirm)
+    {
+        if (confirm)
+        {
+            var result = MessageBox.Show(
+                $"Hapus menu \"{menu.Name}\"?",
+                "Hapus Menu",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+        }
+
+        _pendingDeleteMenu = menu;
+        _operationErrorMessage = null;
+        UpdateOperationError();
 
         try
         {
+            _isLoading = true;
+            UpdateState();
             await _api.DeleteAsync(menu.Id);
+            _pendingDeleteMenu = null;
             await LoadMenus();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menghapus: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _operationErrorMessage = $"Gagal menghapus menu: {GetFriendlyErrorMessage(ex, "operasi")}";
+            UpdateOperationError();
+        }
+        finally
+        {
+            _isLoading = false;
+            UpdateState();
         }
     }
 
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadMenus();
 
-    private void UpdateState(int? visibleCount = null, string? filter = null)
+    private async void RetryDeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pendingDeleteMenu == null) return;
+        await DeleteMenuAsync(_pendingDeleteMenu, confirm: false);
+    }
+
+    private void UpdateState(int? visibleCount = null, string? filter = null, string? searchText = null)
     {
         var count = visibleCount ?? _allMenus.Count;
         var hasError = !string.IsNullOrWhiteSpace(_loadErrorMessage);
@@ -121,11 +155,22 @@ public partial class MenuPage : Page
 
         if (hasEmpty)
         {
-            var filtered = filter is not null && _allMenus.Count > 0;
+            var filtered = (filter is not null || !string.IsNullOrWhiteSpace(searchText)) && _allMenus.Count > 0;
             EmptyStateTitleText.Text = filtered ? "Tidak ada hasil" : "Data Kosong";
             EmptyStateMessageText.Text = filtered
-                ? "Tidak ada menu yang cocok dengan kategori ini."
+                ? "Tidak ada menu yang cocok dengan pencarian atau kategori saat ini."
                 : "Belum ada menu tersedia.";
+        }
+    }
+
+    private void UpdateOperationError()
+    {
+        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
+        OperationErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            OperationErrorText.Text = _operationErrorMessage;
         }
     }
 

@@ -13,6 +13,8 @@ namespace KPL_FE.Views;
 
 public partial class TransactionPage : Page
 {
+    internal static bool PendingNewTransaction;
+
     private readonly TransactionApiController _txApi = new();
     private readonly MenuApiController _menuApi = new();
 
@@ -24,6 +26,8 @@ public partial class TransactionPage : Page
     private bool _isLoadingMenus;
     private string? _transactionsLoadError;
     private string? _menusLoadError;
+    private string? _operationErrorMessage;
+    private Func<Task>? _retryOperation;
 
     public TransactionPage()
     {
@@ -32,7 +36,36 @@ public partial class TransactionPage : Page
         {
             await LoadTransactionsAsync();
             await LoadMenusAsync();
+            if (PendingNewTransaction)
+            {
+                PendingNewTransaction = false;
+                OpenNewTransactionDialog();
+            }
         };
+    }
+
+    public void TriggerNewTransaction()
+    {
+        OpenNewTransactionDialog();
+    }
+
+    private void OpenNewTransactionDialog()
+    {
+        var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
+        if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
+        {
+            _isRefreshing = true;
+            _ = LoadTransactionsAsync().ContinueWith(_ =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
+                    if (match != null)
+                        TransactionsListBox.SelectedItem = match;
+                    _isRefreshing = false;
+                });
+            });
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -110,10 +143,6 @@ public partial class TransactionPage : Page
             {
                 TransactionsListBox.SelectedItem = match;
             }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Gagal memuat detail transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -312,25 +341,22 @@ public partial class TransactionPage : Page
         var button = sender as Button;
         if (button != null) button.IsEnabled = false;
 
-        try
+        var txId = _selectedTransaction.Id;
+        var request = new AddItemRequest
         {
-            var request = new AddItemRequest
-            {
-                MenuId = menu.Id,
-                Quantity = 1
-            };
+            MenuId = menu.Id,
+            Quantity = 1
+        };
 
-            await _txApi.AddItemAsync(_selectedTransaction.Id, request);
-            await RefreshSelectedTransactionAsync();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Gagal menambahkan item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        finally
-        {
-            if (button != null) button.IsEnabled = true;
-        }
+        await ExecuteCartOperationAsync(
+            async () =>
+            {
+                await _txApi.AddItemAsync(txId, request);
+                await RefreshSelectedTransactionAsync();
+            },
+            "Gagal menambahkan item");
+
+        if (button != null) button.IsEnabled = true;
     }
 
     // ──────────────────────────────────────────────
@@ -342,16 +368,16 @@ public partial class TransactionPage : Page
         if (_selectedTransaction == null) return;
         if (sender is not FrameworkElement { Tag: TransactionItemDto item }) return;
 
-        try
-        {
-            var request = new UpdateItemRequest { Quantity = item.Quantity + 1 };
-            await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
-            await RefreshSelectedTransactionAsync();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+        var txId = _selectedTransaction.Id;
+        var request = new UpdateItemRequest { Quantity = item.Quantity + 1 };
+
+        await ExecuteCartOperationAsync(
+            async () =>
+            {
+                await _txApi.UpdateItemQuantityAsync(txId, item.Id, request);
+                await RefreshSelectedTransactionAsync();
+            },
+            "Gagal mengubah jumlah");
     }
 
     private async void DecreaseQtyButton_Click(object sender, RoutedEventArgs e)
@@ -366,16 +392,16 @@ public partial class TransactionPage : Page
             return;
         }
 
-        try
-        {
-            var request = new UpdateItemRequest { Quantity = item.Quantity - 1 };
-            await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
-            await RefreshSelectedTransactionAsync();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Gagal mengubah jumlah: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+        var txId = _selectedTransaction.Id;
+        var request = new UpdateItemRequest { Quantity = item.Quantity - 1 };
+
+        await ExecuteCartOperationAsync(
+            async () =>
+            {
+                await _txApi.UpdateItemQuantityAsync(txId, item.Id, request);
+                await RefreshSelectedTransactionAsync();
+            },
+            "Gagal mengubah jumlah");
     }
 
     private async void RemoveItemButton_Click(object sender, RoutedEventArgs e)
@@ -398,15 +424,63 @@ public partial class TransactionPage : Page
 
         if (result != MessageBoxResult.Yes) return;
 
+        var txId = _selectedTransaction.Id;
+
+        await ExecuteCartOperationAsync(
+            async () =>
+            {
+                await _txApi.RemoveItemAsync(txId, item.Id);
+                await RefreshSelectedTransactionAsync();
+            },
+            "Gagal menghapus item");
+    }
+
+    private async Task ExecuteCartOperationAsync(Func<Task> operation, string errorPrefix)
+    {
+        _retryOperation = operation;
+        _operationErrorMessage = null;
+        UpdateOperationError();
+        SetOperationLoading(true);
+
         try
         {
-            await _txApi.RemoveItemAsync(_selectedTransaction.Id, item.Id);
-            await RefreshSelectedTransactionAsync();
+            await operation();
+            _retryOperation = null;
+            _operationErrorMessage = null;
+            UpdateOperationError();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menghapus item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _operationErrorMessage = $"{errorPrefix}: {GetFriendlyErrorMessage(ex, "operasi")}";
+            UpdateOperationError();
         }
+        finally
+        {
+            SetOperationLoading(false);
+        }
+    }
+
+    private void SetOperationLoading(bool isLoading)
+    {
+        OperationLoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+        OperationLoadingRing.IsActive = isLoading;
+    }
+
+    private void UpdateOperationError()
+    {
+        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
+        OperationErrorOverlay.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            OperationErrorText.Text = _operationErrorMessage;
+        }
+    }
+
+    private async void RetryOperationButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_retryOperation == null) return;
+        await ExecuteCartOperationAsync(_retryOperation, "Gagal memproses ulang operasi");
     }
 
     private async void PayButton_Click(object sender, RoutedEventArgs e)

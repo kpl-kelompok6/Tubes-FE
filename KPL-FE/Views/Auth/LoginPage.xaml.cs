@@ -190,9 +190,17 @@ public partial class LoginPage : Window
         CancelButton.IsEnabled = enabled;
         ModeLogin.IsEnabled = enabled;
         ModeRegister.IsEnabled = enabled;
+        LoginUsernameBox.IsEnabled = enabled;
+        LoginPasswordBox.IsEnabled = enabled;
+        RegUsernameBox.IsEnabled = enabled;
+        RegPasswordBox.IsEnabled = enabled;
+        RegDisplayNameBox.IsEnabled = enabled;
+        RegRoleCombo.IsEnabled = enabled;
 
         if (enabled)
         {
+            AuthLoadingPanel.Visibility = Visibility.Collapsed;
+            AuthLoadingRing.IsActive = false;
             UpdateLoginButton();
             UpdateRegisterButton();
             return;
@@ -200,6 +208,8 @@ public partial class LoginPage : Window
 
         LoginButton.IsEnabled = false;
         RegisterButton.IsEnabled = false;
+        AuthLoadingPanel.Visibility = Visibility.Visible;
+        AuthLoadingRing.IsActive = true;
     }
 
     private void ClearStatus()
