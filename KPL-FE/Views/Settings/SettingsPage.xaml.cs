@@ -97,10 +97,11 @@ public partial class SettingsPage : Page
         App.DisplayName = null;
         App.Role = null;
 
-        var login = new LoginPage();
-        login.ShowDialog();
+        var mainWindow = Window.GetWindow(this);
+        mainWindow.Hide();
 
-        if (login.Saved)
+        var login = new LoginPage();
+        if (login.ShowDialog() == true)
         {
             config.Token = App.Token;
             config.EmployeeId = App.EmployeeId;
@@ -108,12 +109,14 @@ public partial class SettingsPage : Page
             config.Role = App.Role;
             App.Config.Save(config);
 
-            DisplayNameText.Text = App.DisplayName ?? "-";
-            RoleText.Text = App.Role ?? "-";
+            var newMain = new MainWindow();
+            Application.Current.MainWindow = newMain;
+            newMain.Show();
+            mainWindow.Close();
         }
         else
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
     }
 }

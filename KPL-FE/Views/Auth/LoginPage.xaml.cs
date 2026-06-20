@@ -14,21 +14,32 @@ public partial class LoginPage : Window
         InitializeComponent();
         LoginUsernameBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
         LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
+        LoginPasswordTextBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); LoginPasswordBox.Password = LoginPasswordTextBox.Text; };
+        LoginPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
+        LoginPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
         RegUsernameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
         RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
+        RegPasswordTextBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); RegPasswordBox.Password = RegPasswordTextBox.Text; };
+        RegPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
+        RegPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
         RegDisplayNameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
     }
 
     private void UpdateLoginButton()
     {
-        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text)
-            && LoginPasswordBox.SecurePassword.Length > 0;
+        var hasPassword = LoginPasswordTextBox.Visibility == Visibility.Visible
+            ? !string.IsNullOrEmpty(LoginPasswordTextBox.Text)
+            : LoginPasswordBox.SecurePassword.Length > 0;
+        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text) && hasPassword;
     }
 
     private void UpdateRegisterButton()
     {
+        var hasPassword = RegPasswordTextBox.Visibility == Visibility.Visible
+            ? !string.IsNullOrEmpty(RegPasswordTextBox.Text)
+            : RegPasswordBox.SecurePassword.Length > 0;
         RegisterButton.IsEnabled = !string.IsNullOrWhiteSpace(RegUsernameBox.Text)
-            && RegPasswordBox.SecurePassword.Length > 0
+            && hasPassword
             && !string.IsNullOrWhiteSpace(RegDisplayNameBox.Text);
     }
 
@@ -54,6 +65,34 @@ public partial class LoginPage : Window
         }
     }
 
+    private string GetActivePassword(System.Windows.Controls.PasswordBox box, System.Windows.Controls.TextBox textBox)
+    {
+        if (textBox.Visibility == Visibility.Visible)
+            return textBox.Text;
+        return GetPassword(box);
+    }
+
+    private static void TogglePasswordVisibility(System.Windows.Controls.PasswordBox passwordBox, System.Windows.Controls.TextBox textBox, System.Windows.Controls.Primitives.ToggleButton toggle)
+    {
+        if (toggle.IsChecked == true)
+        {
+            textBox.Text = passwordBox.Password;
+            passwordBox.Visibility = Visibility.Collapsed;
+            textBox.Visibility = Visibility.Visible;
+            textBox.Focus();
+            textBox.SelectionStart = textBox.Text.Length;
+            toggle.ToolTip = "Sembunyikan password";
+        }
+        else
+        {
+            passwordBox.Password = textBox.Text;
+            passwordBox.Visibility = Visibility.Visible;
+            textBox.Visibility = Visibility.Collapsed;
+            passwordBox.Focus();
+            toggle.ToolTip = "Tampilkan password";
+        }
+    }
+
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         SetEnabled(false);
@@ -62,7 +101,7 @@ public partial class LoginPage : Window
         var request = new LoginRequest
         {
             Username = LoginUsernameBox.Text.Trim(),
-            Password = GetPassword(LoginPasswordBox)
+            Password = GetActivePassword(LoginPasswordBox, LoginPasswordTextBox)
         };
 
         try
@@ -87,7 +126,7 @@ public partial class LoginPage : Window
 
         var username = RegUsernameBox.Text.Trim();
         var displayName = RegDisplayNameBox.Text.Trim();
-        var password = GetPassword(RegPasswordBox);
+        var password = GetActivePassword(RegPasswordBox, RegPasswordTextBox);
 
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -124,7 +163,9 @@ public partial class LoginPage : Window
 
             LoginUsernameBox.Text = request.Username;
             LoginPasswordBox.Clear();
+            LoginPasswordTextBox.Clear();
             RegPasswordBox.Clear();
+            RegPasswordTextBox.Clear();
             ModeLogin.IsChecked = true;
             ShowSuccess("Akun berhasil dibuat. Silakan login.");
             SetEnabled(true);
