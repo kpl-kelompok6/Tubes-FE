@@ -23,6 +23,7 @@ public partial class NavigationRootPage : UserControl
     {
         InitializeComponent();
         _rootFrame = RootFrame;
+        ToastNotificationService.Instance.Initialize(ToastContainer);
 
         _vc = new NavigationRootViewController(
             pages: new[]
@@ -72,8 +73,7 @@ public partial class NavigationRootPage : UserControl
 
         if (PagesList.SelectedValue is Type t && t == typeof(HistoryPage) && App.Role != "Admin")
         {
-            MessageBox.Show("Only admin can access this menu.", "Access Denied",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageDialog.Show("Akses Ditolak", "Hanya admin yang dapat mengakses menu ini.", MessageDialogButton.OK);
             _suppressNavigation = true;
             PagesList.SelectedValue = _vc.SelectedPageType;
             return;
