@@ -26,14 +26,19 @@ public partial class HistoryPage : Page
         InitializeComponent();
         Loaded += async (_, _) =>
         {
+            var today = DateTime.Today;
+            StartDatePicker.DisplayDateEnd = today;
+            EndDatePicker.DisplayDateEnd = today;
             StartDatePicker.SelectedDate = DateTime.Today.AddDays(-7);
-            EndDatePicker.SelectedDate = DateTime.Today;
+            EndDatePicker.SelectedDate = today;
             await LoadDataAsync();
         };
     }
 
     private async Task LoadDataAsync()
     {
+        if (!ValidateDateFilter()) return;
+
         await Task.WhenAll(
             LoadHistoriesAsync(),
             LoadReportAsync());
@@ -167,7 +172,47 @@ public partial class HistoryPage : Page
     {
         StartDatePicker.SelectedDate = null;
         EndDatePicker.SelectedDate = null;
+        ClearDateFilterValidation();
         await LoadDataAsync();
+    }
+
+    private void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        ClearDateFilterValidation();
+    }
+
+    private bool ValidateDateFilter()
+    {
+        var start = StartDatePicker.SelectedDate?.Date;
+        var end = EndDatePicker.SelectedDate?.Date;
+        var today = DateTime.Today;
+
+        if (start > today || end > today)
+        {
+            ShowDateFilterValidation("Tanggal filter tidak boleh melebihi hari ini.");
+            return false;
+        }
+
+        if (start.HasValue && end.HasValue && start > end)
+        {
+            ShowDateFilterValidation("Tanggal mulai tidak boleh lebih besar dari tanggal akhir.");
+            return false;
+        }
+
+        ClearDateFilterValidation();
+        return true;
+    }
+
+    private void ShowDateFilterValidation(string message)
+    {
+        DateFilterValidationText.Text = message;
+        DateFilterValidationText.Visibility = Visibility.Visible;
+    }
+
+    private void ClearDateFilterValidation()
+    {
+        DateFilterValidationText.Text = string.Empty;
+        DateFilterValidationText.Visibility = Visibility.Collapsed;
     }
 
     private void HistoryListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
