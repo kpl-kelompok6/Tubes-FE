@@ -3,10 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         Title="Transaksi Baru"
-        Width="400" Height="280"
-        MinWidth="350" MinHeight="250"
+        Width="400" Height="360"
+        MinWidth="350" MinHeight="300"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
         ShowInTaskbar="False"
         ui:WindowHelper.UseModernWindowStyle="True">
 
@@ -16,23 +15,25 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="Buat Transaksi Baru" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Buat Transaksi Baru" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
 
-            <StackPanel>
-                <TextBlock Text="Nama Pelanggan (Opsional)" Margin="0,0,0,4" />
-                <TextBox x:Name="CustomerNameBox" MaxLength="100" ui:ControlHelper.PlaceholderText="Masukkan nama pelanggan..." />
-            </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Nama Pelanggan (Opsional)" Margin="0,0,0,4" />
+                    <TextBox x:Name="CustomerNameBox" MaxLength="100" ui:ControlHelper.PlaceholderText="Masukkan nama pelanggan..." />
+                </StackPanel>
 
-            <StackPanel Margin="0,12,0,0">
-                <TextBlock Text="Nomor Meja (Opsional)" Margin="0,0,0,4" />
-                <TextBox x:Name="TableNumberBox" MaxLength="20" ui:ControlHelper.PlaceholderText="Masukkan nomor meja..." />
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="Nomor Meja (Opsional)" Margin="0,0,0,4" />
+                    <TextBox x:Name="TableNumberBox" MaxLength="20" ui:ControlHelper.PlaceholderText="Masukkan nomor meja..." />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+        </ScrollViewer>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <StackPanel x:Name="CreatingPanel" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" Visibility="Collapsed">
-                <ui:ProgressRing Width="20" Height="20" IsActive="False" />
+                <ui:ProgressRing x:Name="CreatingProgressRing" Width="20" Height="20" IsActive="False" />
                 <TextBlock Text="Membuat..." Margin="8,0,0,0" VerticalAlignment="Center" Opacity="0.75" />
             </StackPanel>
             <Button x:Name="CancelButton" Click="CancelButton_Click" MinWidth="90" Margin="0,0,8,0">

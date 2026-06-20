@@ -1,6 +1,7 @@
 using KPL_FE.Models;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 
 namespace KPL_FE.Controllers;
 
@@ -19,11 +20,11 @@ public sealed class ApiClient
         _http = http;
     }
 
-    private static async Task<HttpResponseMessage> SendAsync(HttpClient http, HttpRequestMessage request)
+    private static async Task<HttpResponseMessage> SendAsync(HttpClient http, HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         try
         {
-            return await http.SendAsync(request);
+            return await http.SendAsync(request, cancellationToken);
         }
         catch (HttpRequestException)
         {
@@ -35,57 +36,57 @@ public sealed class ApiClient
         }
     }
 
-    public async Task<T> GetAsync<T>(string path)
+    public async Task<T> GetAsync<T>(string path, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, Url(path));
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         return await HandleResponseAsync<T>(resp);
     }
 
-    public async Task<T> PostAsync<T>(string path, object body)
+    public async Task<T> PostAsync<T>(string path, object body, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(body, _json);
         using var request = new HttpRequestMessage(HttpMethod.Post, Url(path))
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         return await HandleResponseAsync<T>(resp);
     }
 
-    public async Task<T> PutAsync<T>(string path, object body)
+    public async Task<T> PutAsync<T>(string path, object body, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(body, _json);
         using var request = new HttpRequestMessage(HttpMethod.Put, Url(path))
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         return await HandleResponseAsync<T>(resp);
     }
 
-    public async Task<T> PatchAsync<T>(string path, object body)
+    public async Task<T> PatchAsync<T>(string path, object body, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(body, _json);
         using var request = new HttpRequestMessage(new HttpMethod("PATCH"), Url(path))
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         return await HandleResponseAsync<T>(resp);
     }
 
-    public async Task DeleteAsync(string path)
+    public async Task DeleteAsync(string path, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Url(path));
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         await ThrowOnErrorAsync(resp);
     }
 
-    public async Task<T> DeleteAsync<T>(string path)
+    public async Task<T> DeleteAsync<T>(string path, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Url(path));
-        var resp = await SendAsync(_http, request);
+        var resp = await SendAsync(_http, request, cancellationToken);
         return await HandleResponseAsync<T>(resp);
     }
 

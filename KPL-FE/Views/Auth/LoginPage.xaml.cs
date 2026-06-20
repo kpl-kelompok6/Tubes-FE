@@ -1,5 +1,8 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -7,19 +10,20 @@ namespace KPL_FE.Views;
 
 public partial class LoginPage : Window
 {
+    private bool _isSyncing;
     public bool Saved { get; private set; }
 
     public LoginPage()
     {
         InitializeComponent();
         LoginUsernameBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
-        LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
-        LoginPasswordTextBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); LoginPasswordBox.Password = LoginPasswordTextBox.Text; };
+        LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; LoginPasswordTextBox.Text = LoginPasswordBox.Password; _isSyncing = false; } };
+        LoginPasswordTextBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; LoginPasswordBox.Password = LoginPasswordTextBox.Text; _isSyncing = false; } };
         LoginPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
         LoginPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
         RegUsernameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
-        RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
-        RegPasswordTextBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); RegPasswordBox.Password = RegPasswordTextBox.Text; };
+        RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; RegPasswordTextBox.Text = RegPasswordBox.Password; _isSyncing = false; } };
+        RegPasswordTextBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; RegPasswordBox.Password = RegPasswordTextBox.Text; _isSyncing = false; } };
         RegPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
         RegPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
         RegDisplayNameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
@@ -115,7 +119,7 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            ShowError($"Login gagal: {ex.Message}");
+            ShowError(GetFriendlyErrorMessage(ex, "login"));
             SetEnabled(true);
         }
     }
@@ -172,9 +176,20 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            ShowError($"Registrasi gagal: {ex.Message}");
+            ShowError(GetFriendlyErrorMessage(ex, "registrasi"));
             SetEnabled(true);
         }
+    }
+
+    private static string GetFriendlyErrorMessage(Exception ex, string context)
+    {
+        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
+            return $"{context} gagal: Server tidak merespons. Coba lagi.";
+
+        if (ex is HttpRequestException)
+            return $"{context} gagal: Tidak dapat terhubung ke server. Coba lagi.";
+
+        return $"{context} gagal: {ex.Message}";
     }
 
     private static void ApplyAuth(LoginResponse response)

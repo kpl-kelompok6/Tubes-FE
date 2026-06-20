@@ -7,94 +7,282 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace KPL_FE.Views;
 
 public partial class PaymentPage : Page
 {
-    private readonly PaymentApiController _paymentApi = new();
-    private readonly HistoryApiController _historyApi = new();
+    internal static int? PendingPaymentTransactionId;
 
-    private List<PaymentResponse> _payments = [];
+    private readonly TransactionApiController _txApi = new();
+    private readonly PaymentApiController _paymentApi = new();
+
+    private List<TransactionDto> _activeTransactions = [];
+    private TransactionDto? _selectedTransaction;
     private bool _isLoading;
     private string? _loadError;
+    private TransactionDto? _successTransaction;
+    private decimal _changeAmount;
 
     public PaymentPage()
     {
         InitializeComponent();
-        Loaded += async (_, _) => await LoadPaymentsAsync();
+        Loaded += Page_Loaded;
     }
 
-    private async Task LoadPaymentsAsync()
+    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (PendingPaymentTransactionId.HasValue)
+        {
+            var id = PendingPaymentTransactionId.Value;
+            PendingPaymentTransactionId = null;
+            await LoadPaymentFormAsync(id);
+        }
+        else
+        {
+            await LoadActiveTransactionsAsync();
+        }
+    }
+
+    // ──────────────────────────────────────────────
+    // Active Transaction List
+    // ──────────────────────────────────────────────
+
+    private async Task LoadActiveTransactionsAsync()
     {
         _isLoading = true;
         _loadError = null;
-        UpdateState();
+        ShowState(ActiveListPanel);
+        UpdateActiveListState();
 
         try
         {
-            _payments = await _paymentApi.GetAllPaymentsAsync();
-            RefreshList();
+            var all = await _txApi.GetAllAsync();
+            _activeTransactions = all.FindAll(t => t.Status == "Created");
+            RefreshActiveList();
         }
         catch (Exception ex)
         {
-            _loadError = GetFriendlyErrorMessage(ex, "pembayaran");
-            UpdateState();
+            _loadError = GetFriendlyErrorMessage(ex, "transaksi");
+            UpdateActiveListState();
         }
         finally
         {
             _isLoading = false;
-            UpdateState();
+            UpdateActiveListState();
         }
     }
 
-    private void RefreshList()
+    private void RefreshActiveList()
     {
-        PaymentsListBox.ItemsSource = null;
-        PaymentsListBox.ItemsSource = _payments;
-        UpdateState();
+        ActiveTxListBox.ItemsSource = null;
+        ActiveTxListBox.ItemsSource = _activeTransactions;
+        UpdateActiveListState();
     }
 
-    private void UpdateState()
+    private void UpdateActiveListState()
     {
         var hasError = !string.IsNullOrWhiteSpace(_loadError);
+        var isEmpty = !_isLoading && !hasError && _activeTransactions.Count == 0;
 
         LoadingPanel.Visibility = _isLoading ? Visibility.Visible : Visibility.Collapsed;
         ErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
-        EmptyPanel.Visibility = !_isLoading && !hasError && _payments.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        EmptyPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
 
         if (hasError)
             ErrorText.Text = _loadError;
     }
 
-    private async void PaymentsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    // ──────────────────────────────────────────────
+    // Payment Form
+    // ──────────────────────────────────────────────
+
+    private async Task LoadPaymentFormAsync(int transactionId)
     {
-        if (PaymentsListBox.SelectedItem is not PaymentResponse selected)
-        {
-            PaymentsListBox.SelectedItem = null;
-            return;
-        }
+        _isLoading = true;
+        _loadError = null;
+        LoadingPanel.Visibility = Visibility.Visible;
 
         try
         {
-            var detail = await _historyApi.GetByIdAsync(selected.TransactionId);
-            var dialog = new TransactionDetailDialog(detail)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            dialog.ShowDialog();
-        }
-        catch
-        {
-            MessageBox.Show("Gagal memuat detail pembayaran.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+            var tx = await _txApi.GetByIdAsync(transactionId);
 
-        PaymentsListBox.SelectedItem = null;
+            if (tx.Status != "Created")
+            {
+                _loadError = "Transaksi ini sudah dibayar atau tidak tersedia.";
+                _isLoading = false;
+                ShowState(ActiveListPanel);
+                UpdateActiveListState();
+                return;
+            }
+
+            _selectedTransaction = tx;
+            ShowPaymentForm();
+        }
+        catch (Exception ex)
+        {
+            _loadError = GetFriendlyErrorMessage(ex, "transaksi");
+            _isLoading = false;
+            ShowState(ActiveListPanel);
+            UpdateActiveListState();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
-    private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadPaymentsAsync();
+    private void ShowPaymentForm()
+    {
+        if (_selectedTransaction == null) return;
+
+        TxCodeText.Text = $"Transaksi {_selectedTransaction.DisplayCode}";
+        TxStatusText.Text = _selectedTransaction.Status;
+        TxCustomerText.Text = $"Pelanggan: {_selectedTransaction.CustomerName ?? "-"} (Meja {_selectedTransaction.TableNumber ?? "-"})";
+        TxTotalText.Text = _selectedTransaction.TotalAmountFormatted;
+        TxItemsControl.ItemsSource = _selectedTransaction.Items ?? [];
+
+        PaidAmountTextBox.Text = "";
+        ChangeAmountText.Text = "Rp 0";
+        ChangeAmountText.Foreground = Brushes.Green;
+        PaymentMethodCombo.SelectedIndex = 0;
+        ConfirmPayButton.IsEnabled = false;
+        PaymentErrorText.Visibility = Visibility.Collapsed;
+        PaymentLoadingPanel.Visibility = Visibility.Collapsed;
+        FormLoadingOverlay.Visibility = Visibility.Collapsed;
+
+        ShowState(PaymentFormPanel);
+    }
+
+    private void PaidAmountTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        PaymentErrorText.Visibility = Visibility.Collapsed;
+
+        if (_selectedTransaction != null && decimal.TryParse(PaidAmountTextBox.Text, out decimal paidAmount))
+        {
+            var change = paidAmount - _selectedTransaction.TotalAmount;
+            if (change >= 0)
+            {
+                ChangeAmountText.Text = $"Rp {change:N0}";
+                ChangeAmountText.Foreground = Brushes.Green;
+                ConfirmPayButton.IsEnabled = true;
+            }
+            else
+            {
+                ChangeAmountText.Text = $"Kurang Rp {Math.Abs(change):N0}";
+                ChangeAmountText.Foreground = Brushes.Red;
+                ConfirmPayButton.IsEnabled = false;
+            }
+        }
+        else
+        {
+            ChangeAmountText.Text = "Rp 0";
+            ChangeAmountText.Foreground = Brushes.Gray;
+            ConfirmPayButton.IsEnabled = false;
+        }
+    }
+
+    private async void ConfirmPayButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTransaction == null) return;
+        if (!decimal.TryParse(PaidAmountTextBox.Text, out decimal paidAmount)) return;
+
+        SetPaymentProcessing(true);
+        try
+        {
+            var method = (PaymentMethodCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Cash";
+            var req = new PaymentRequest
+            {
+                TransactionId = _selectedTransaction.Id,
+                PaidAmount = paidAmount,
+                PaymentMethod = method
+            };
+
+            var result = await _paymentApi.ProcessPaymentAsync(req);
+            _successTransaction = _selectedTransaction;
+            _changeAmount = result.ChangeAmount;
+            ShowSuccess();
+        }
+        catch (Exception ex)
+        {
+            PaymentErrorText.Text = ex.Message;
+            PaymentErrorText.Visibility = Visibility.Visible;
+            SetPaymentProcessing(false);
+        }
+    }
+
+    private void SetPaymentProcessing(bool isProcessing)
+    {
+        ConfirmPayButton.IsEnabled = !isProcessing;
+        CancelPayButton.IsEnabled = !isProcessing;
+        PaidAmountTextBox.IsEnabled = !isProcessing;
+        PaymentMethodCombo.IsEnabled = !isProcessing;
+        FormLoadingOverlay.Visibility = isProcessing ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void CancelPayButton_Click(object sender, RoutedEventArgs e)
+    {
+        _selectedTransaction = null;
+        _ = LoadActiveTransactionsAsync();
+    }
+
+    // ──────────────────────────────────────────────
+    // Success State
+    // ──────────────────────────────────────────────
+
+    private void ShowSuccess()
+    {
+        if (_successTransaction == null) return;
+
+        SuccessChangeText.Text = $"Kembalian: Rp {_changeAmount:N0}";
+        ShowState(SuccessPanel);
+    }
+
+    private void SuccessDoneButton_Click(object sender, RoutedEventArgs e)
+    {
+        _selectedTransaction = null;
+        _successTransaction = null;
+        _ = LoadActiveTransactionsAsync();
+    }
+
+    // ──────────────────────────────────────────────
+    // List Selection & Error/Retry
+    // ──────────────────────────────────────────────
+
+    private async void ActiveTxListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ActiveTxListBox.SelectedItem is not TransactionDto selected) return;
+        ActiveTxListBox.SelectedItem = null;
+        await LoadPaymentFormAsync(selected.Id);
+    }
+
+    private void EditFromListButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: int id }) return;
+        TransactionPage.PendingEditTransactionId = id;
+        NavigationRootPage.SwitchTo(typeof(TransactionPage));
+    }
+
+    private void EditFromSummaryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTransaction == null) return;
+        TransactionPage.PendingEditTransactionId = _selectedTransaction.Id;
+        NavigationRootPage.SwitchTo(typeof(TransactionPage));
+    }
+
+    private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadActiveTransactionsAsync();
+
+    // ──────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────
+
+    private void ShowState(FrameworkElement activePanel)
+    {
+        ActiveListPanel.Visibility = activePanel == ActiveListPanel ? Visibility.Visible : Visibility.Collapsed;
+        PaymentFormPanel.Visibility = activePanel == PaymentFormPanel ? Visibility.Visible : Visibility.Collapsed;
+        SuccessPanel.Visibility = activePanel == SuccessPanel ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private static string GetFriendlyErrorMessage(Exception ex, string context)
     {

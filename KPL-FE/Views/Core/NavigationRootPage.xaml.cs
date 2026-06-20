@@ -11,12 +11,16 @@ namespace KPL_FE.Views;
 
 public partial class NavigationRootPage : UserControl
 {
+    private static Frame? _rootFrame;
     private readonly NavigationRootViewController _vc;
     private readonly KeyboardShortcutController _shortcuts;
+
+    public static void SwitchTo(Type pageType) => (_rootFrame as ModernWpf.Controls.Frame)?.Navigate(pageType);
 
     public NavigationRootPage()
     {
         InitializeComponent();
+        _rootFrame = RootFrame;
 
         _vc = new NavigationRootViewController(
             pages: new[]
@@ -72,5 +76,6 @@ public partial class NavigationRootPage : UserControl
     {
         _vc.OnRootFrameNavigated(e.Content);
         PagesList.SelectedValue = _vc.SelectedPageType;
+        _vc.ReleaseIgnore();
     }
 }
