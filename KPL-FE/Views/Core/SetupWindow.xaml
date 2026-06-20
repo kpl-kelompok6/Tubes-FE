@@ -26,7 +26,10 @@
             <TextBox x:Name="UrlTextBox" ui:ControlHelper.PlaceholderText="http://localhost:5146" />
         </StackPanel>
 
-        <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" TextWrapping="Wrap" />
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+            <ui:ProgressRing x:Name="VerifyLoadingRing" Width="20" Height="20" IsActive="False" Visibility="Collapsed" />
+            <TextBlock x:Name="StatusText" Margin="8,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" />
+        </StackPanel>
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="CancelButton" Click="CancelButton_Click" MinWidth="100" Margin="0,0,8,0">

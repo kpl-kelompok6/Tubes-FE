@@ -13,6 +13,8 @@ public partial class MenuPage : Page
     private List<MenuDto> _allMenus = [];
     private bool _isLoading;
     private string? _loadErrorMessage;
+    private string? _operationErrorMessage;
+    private MenuDto? _pendingDeleteMenu;
 
     public MenuPage()
     {
@@ -87,26 +89,53 @@ public partial class MenuPage : Page
     {
         if ((sender as FrameworkElement)?.Tag is not MenuDto menu) return;
 
-        var result = MessageBox.Show(
-            $"Hapus menu \"{menu.Name}\"?",
-            "Hapus Menu",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+        await DeleteMenuAsync(menu, confirm: true);
+    }
 
-        if (result != MessageBoxResult.Yes) return;
+    private async Task DeleteMenuAsync(MenuDto menu, bool confirm)
+    {
+        if (confirm)
+        {
+            var result = MessageBox.Show(
+                $"Hapus menu \"{menu.Name}\"?",
+                "Hapus Menu",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+        }
+
+        _pendingDeleteMenu = menu;
+        _operationErrorMessage = null;
+        UpdateOperationError();
 
         try
         {
+            _isLoading = true;
+            UpdateState();
             await _api.DeleteAsync(menu.Id);
+            _pendingDeleteMenu = null;
             await LoadMenus();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Gagal menghapus: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _operationErrorMessage = $"Gagal menghapus menu: {GetFriendlyErrorMessage(ex, "operasi")}";
+            UpdateOperationError();
+        }
+        finally
+        {
+            _isLoading = false;
+            UpdateState();
         }
     }
 
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadMenus();
+
+    private async void RetryDeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pendingDeleteMenu == null) return;
+        await DeleteMenuAsync(_pendingDeleteMenu, confirm: false);
+    }
 
     private void UpdateState(int? visibleCount = null, string? filter = null, string? searchText = null)
     {
@@ -131,6 +160,17 @@ public partial class MenuPage : Page
             EmptyStateMessageText.Text = filtered
                 ? "Tidak ada menu yang cocok dengan pencarian atau kategori saat ini."
                 : "Belum ada menu tersedia.";
+        }
+    }
+
+    private void UpdateOperationError()
+    {
+        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
+        OperationErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
+
+        if (hasError)
+        {
+            OperationErrorText.Text = _operationErrorMessage;
         }
     }
 

@@ -156,6 +156,14 @@
                 </StackPanel>
             </Border>
 
+            <Border x:Name="OperationErrorPanel" Style="{StaticResource StateCard}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" MaxWidth="420">
+                <StackPanel>
+                    <TextBlock Text="Operasi gagal" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
+                    <TextBlock x:Name="OperationErrorText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextAlignment="Center" TextWrapping="Wrap" />
+                    <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryDeleteButton_Click" />
+                </StackPanel>
+            </Border>
+
             <Border x:Name="EmptyStatePanel" Style="{StaticResource StateCard}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" MaxWidth="420">
                 <StackPanel>
                     <TextBlock x:Name="EmptyStateTitleText" Text="Data Kosong" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />

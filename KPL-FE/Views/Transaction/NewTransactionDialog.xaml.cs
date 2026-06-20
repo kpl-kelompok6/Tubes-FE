@@ -18,10 +18,7 @@ public partial class NewTransactionDialog : Window
 
     private async void CreateButton_Click(object sender, RoutedEventArgs e)
     {
-        CreateButton.IsEnabled = false;
-        CancelButton.IsEnabled = false;
-        CustomerNameBox.IsEnabled = false;
-        TableNumberBox.IsEnabled = false;
+        SetCreating(true);
 
         var request = new CreateTransactionRequest
         {
@@ -38,12 +35,19 @@ public partial class NewTransactionDialog : Window
         catch (Exception ex)
         {
             MessageBox.Show($"Gagal membuat transaksi: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            
-            CreateButton.IsEnabled = true;
-            CancelButton.IsEnabled = true;
-            CustomerNameBox.IsEnabled = true;
-            TableNumberBox.IsEnabled = true;
+            SetCreating(false);
         }
+    }
+
+    private void SetCreating(bool isCreating)
+    {
+        CreateButton.IsEnabled = !isCreating;
+        CancelButton.IsEnabled = !isCreating;
+        CustomerNameBox.IsEnabled = !isCreating;
+        TableNumberBox.IsEnabled = !isCreating;
+        CreatingPanel.Visibility = isCreating ? Visibility.Visible : Visibility.Collapsed;
+        if (CreatingPanel.Children[0] is ModernWpf.Controls.ProgressRing ring)
+            ring.IsActive = isCreating;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)

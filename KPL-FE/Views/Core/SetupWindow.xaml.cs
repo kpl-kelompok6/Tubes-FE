@@ -28,6 +28,9 @@ public partial class SetupWindow : Window
     {
         SaveButton.IsEnabled = false;
         CancelButton.IsEnabled = false;
+        UrlTextBox.IsEnabled = false;
+        VerifyLoadingRing.Visibility = Visibility.Visible;
+        VerifyLoadingRing.IsActive = true;
         StatusText.Foreground = Brushes.Gray;
         StatusText.Text = "Verifying...";
 
@@ -46,6 +49,9 @@ public partial class SetupWindow : Window
         StatusText.Text = error;
         SaveButton.IsEnabled = true;
         CancelButton.IsEnabled = true;
+        UrlTextBox.IsEnabled = true;
+        VerifyLoadingRing.Visibility = Visibility.Collapsed;
+        VerifyLoadingRing.IsActive = false;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
