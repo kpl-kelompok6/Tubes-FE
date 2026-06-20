@@ -3,6 +3,7 @@ using KPL_FE.Models;
 using KPL_FE.ViewControllers;
 using KPL_FE.Views;
 using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
@@ -14,6 +15,7 @@ public partial class NavigationRootPage : UserControl
     private static Frame? _rootFrame;
     private readonly NavigationRootViewController _vc;
     private readonly KeyboardShortcutController _shortcuts;
+    private bool _suppressNavigation;
 
     public static void SwitchTo(Type pageType) => (_rootFrame as ModernWpf.Controls.Frame)?.Navigate(pageType);
 
@@ -66,10 +68,21 @@ public partial class NavigationRootPage : UserControl
 
     private void PagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var t = _vc.OnPagesListSelectionChanged(PagesList.SelectedValue, out var shouldNavigate);
-        if (!shouldNavigate || t is null) return;
+        if (_suppressNavigation) { _suppressNavigation = false; return; }
 
-        RootFrame.Navigate(t);
+        if (PagesList.SelectedValue is Type t && t == typeof(HistoryPage) && App.Role != "Admin")
+        {
+            MessageBox.Show("Only admin can access this menu.", "Access Denied",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            _suppressNavigation = true;
+            PagesList.SelectedValue = _vc.SelectedPageType;
+            return;
+        }
+
+        var pageType = _vc.OnPagesListSelectionChanged(PagesList.SelectedValue, out var shouldNavigate);
+        if (!shouldNavigate || pageType is null) return;
+
+        RootFrame.Navigate(pageType);
     }
 
     private void RootFrame_Navigated(object sender, NavigationEventArgs e)

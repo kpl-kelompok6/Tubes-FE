@@ -71,6 +71,13 @@ public partial class MenuPage : Page
 
     private async void AddButton_Click(object sender, RoutedEventArgs e)
     {
+        if (App.Role != "Admin")
+        {
+            MessageBox.Show("Only admin can add menu items.", "Access Denied",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         var dialog = new MenuDialog { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true)
             await LoadMenus();
