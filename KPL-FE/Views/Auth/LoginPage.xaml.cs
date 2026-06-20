@@ -1,5 +1,8 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -119,7 +122,7 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            ShowError($"Login gagal: {ex.Message}");
+            ShowError(GetFriendlyErrorMessage(ex, "login"));
             SetEnabled(true);
         }
     }
@@ -186,9 +189,20 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            ShowError($"Registrasi gagal: {ex.Message}");
+            ShowError(GetFriendlyErrorMessage(ex, "registrasi"));
             SetEnabled(true);
         }
+    }
+
+    private static string GetFriendlyErrorMessage(Exception ex, string context)
+    {
+        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
+            return $"{context} gagal: Server tidak merespons. Coba lagi.";
+
+        if (ex is HttpRequestException)
+            return $"{context} gagal: Tidak dapat terhubung ke server. Coba lagi.";
+
+        return $"{context} gagal: {ex.Message}";
     }
 
     private static void ApplyAuth(LoginResponse response)
