@@ -83,22 +83,8 @@
                 <StackPanel x:Name="LoginPanel">
                     <TextBox x:Name="LoginUsernameBox" ui:ControlHelper.Header="Username"
                              Margin="0,0,0,12" MaxLength="50" />
-                    <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="Password" FontSize="13" Margin="0,0,0,4"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <PasswordBox x:Name="LoginPasswordBox" MaxLength="100" />
-                                <TextBox x:Name="LoginPasswordTextBox" MaxLength="100" Visibility="Collapsed" />
-                            </Grid>
-                            <ToggleButton x:Name="LoginPasswordToggle" Grid.Column="1" Width="30" Height="30" Margin="4,0,0,0"
-                                          Content="👁" FontSize="14" ToolTip="Tampilkan password" />
-                        </Grid>
-                    </StackPanel>
+                    <PasswordBox x:Name="LoginPasswordBox" ui:ControlHelper.Header="Password"
+                                 Margin="0,0,0,20" MaxLength="100" />
 
                     <Button x:Name="LoginButton" Content="Login"
                             Style="{DynamicResource AccentButtonStyle}"
@@ -110,22 +96,8 @@
                 <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
                     <TextBox x:Name="RegUsernameBox" ui:ControlHelper.Header="Username"
                              Margin="0,0,0,12" MaxLength="50" />
-                    <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="Password" FontSize="13" Margin="0,0,0,4"
-                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <PasswordBox x:Name="RegPasswordBox" MaxLength="100" />
-                                <TextBox x:Name="RegPasswordTextBox" MaxLength="100" Visibility="Collapsed" />
-                            </Grid>
-                            <ToggleButton x:Name="RegPasswordToggle" Grid.Column="1" Width="30" Height="30" Margin="4,0,0,0"
-                                          Content="👁" FontSize="14" ToolTip="Tampilkan password" />
-                        </Grid>
-                    </StackPanel>
+                    <PasswordBox x:Name="RegPasswordBox" ui:ControlHelper.Header="Password"
+                                 Margin="0,0,0,12" MaxLength="100" />
                     <TextBox x:Name="RegDisplayNameBox" ui:ControlHelper.Header="Display Name"
                              Margin="0,0,0,12" MaxLength="100" />
                     <ComboBox x:Name="RegRoleCombo" ui:ControlHelper.Header="Role" Margin="0,0,0,20"
