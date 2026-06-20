@@ -199,6 +199,7 @@ public partial class TransactionPage : Page
 
         EmptyCartText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         PayButton.IsEnabled = items.Count > 0;
+        CancelTransactionButton.IsEnabled = true;
     }
 
     private void UpdateTransactionsState()
@@ -476,6 +477,34 @@ public partial class TransactionPage : Page
     {
         if (_retryOperation == null) return;
         await ExecuteCartOperationAsync(_retryOperation, "Gagal memproses ulang operasi");
+    }
+
+    private async void CancelTransactionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTransaction == null) return;
+
+        var dialog = new ModernWpf.Controls.ContentDialog
+        {
+            Title = "Batalkan Transaksi",
+            Content = $"Yakin ingin membatalkan transaksi {_selectedTransaction.TransactionCode}? Semua item akan dihapus dan aksi ini tidak dapat dibatalkan.",
+            PrimaryButtonText = "Ya, Batalkan",
+            CloseButtonText = "Tidak",
+            DefaultButton = ModernWpf.Controls.ContentDialogButton.Close
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ModernWpf.Controls.ContentDialogResult.Primary) return;
+
+        var txId = _selectedTransaction.Id;
+
+        await ExecuteCartOperationAsync(async () =>
+        {
+            var api = new TransactionApiController();
+            await api.CancelAsync(txId);
+
+            _selectedTransaction = null;
+            await LoadTransactionsAsync();
+        }, "Gagal membatalkan transaksi");
     }
 
     private async void PayButton_Click(object sender, RoutedEventArgs e)
