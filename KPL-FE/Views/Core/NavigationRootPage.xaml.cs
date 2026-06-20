@@ -15,7 +15,7 @@ public partial class NavigationRootPage : UserControl
     private readonly NavigationRootViewController _vc;
     private readonly KeyboardShortcutController _shortcuts;
 
-    public static void SwitchTo(Type pageType) => _rootFrame?.Navigate(pageType);
+    public static void SwitchTo(Type pageType) => (_rootFrame as ModernWpf.Controls.Frame)?.Navigate(pageType);
 
     public NavigationRootPage()
     {
