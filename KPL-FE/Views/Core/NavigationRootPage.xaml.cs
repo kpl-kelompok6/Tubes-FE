@@ -58,6 +58,13 @@ public partial class NavigationRootPage : UserControl
             _shortcuts.HandleRefresh();
             return;
         }
+
+        if (e.KeyboardDevice.Modifiers == ModifierKeys.Shift && e.Key == Key.OemQuestion)
+        {
+            e.Handled = true;
+            _shortcuts.HandleShowHelp();
+            return;
+        }
     }
 
     private void PagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -1,5 +1,6 @@
 using KPL_FE.Views;
 using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace KPL_FE.Controllers;
@@ -43,5 +44,16 @@ public sealed class KeyboardShortcutController
         var current = _frame.Content as Page;
         if (current == null) return;
         _frame.Navigate(current.GetType());
+    }
+
+    public void HandleShowHelp()
+    {
+        var window = Window.GetWindow(_frame);
+        if (window == null) return;
+        var overlay = new ShortcutHelpOverlay
+        {
+            Owner = window
+        };
+        overlay.ShowDialog();
     }
 }
