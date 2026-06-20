@@ -19,10 +19,26 @@ public sealed class ApiClient
         _http = http;
     }
 
+    private static async Task<HttpResponseMessage> SendAsync(HttpClient http, HttpRequestMessage request)
+    {
+        try
+        {
+            return await http.SendAsync(request);
+        }
+        catch (HttpRequestException)
+        {
+            throw new Exception("Gagal terhubung ke server. Pastikan server sedang berjalan.");
+        }
+        catch (TaskCanceledException)
+        {
+            throw new Exception("Waktu koneksi habis. Server tidak merespon.");
+        }
+    }
+
     public async Task<T> GetAsync<T>(string path)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, Url(path));
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         return await HandleResponseAsync<T>(resp);
     }
 
@@ -33,7 +49,7 @@ public sealed class ApiClient
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         return await HandleResponseAsync<T>(resp);
     }
 
@@ -44,7 +60,7 @@ public sealed class ApiClient
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         return await HandleResponseAsync<T>(resp);
     }
 
@@ -55,21 +71,21 @@ public sealed class ApiClient
         {
             Content = new StringContent(json, null, "application/json")
         };
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         return await HandleResponseAsync<T>(resp);
     }
 
     public async Task DeleteAsync(string path)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Url(path));
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         await ThrowOnErrorAsync(resp);
     }
 
     public async Task<T> DeleteAsync<T>(string path)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, Url(path));
-        var resp = await _http.SendAsync(request);
+        var resp = await SendAsync(_http, request);
         return await HandleResponseAsync<T>(resp);
     }
 
@@ -89,13 +105,26 @@ public sealed class ApiClient
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
-            if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
+            if (root.TryGetProperty("errors", out var errors))
             {
-                var first = errors.EnumerateArray()
-                    .Select(e => e.GetString())
-                    .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e));
-                if (!string.IsNullOrWhiteSpace(first))
-                    throw new Exception(first);
+                if (errors.ValueKind == JsonValueKind.Array)
+                {
+                    var first = errors.EnumerateArray()
+                        .Select(e => e.GetString())
+                        .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e));
+                    if (!string.IsNullOrWhiteSpace(first))
+                        throw new Exception(first);
+                }
+                else if (errors.ValueKind == JsonValueKind.Object)
+                {
+                    var first = errors.EnumerateObject()
+                        .SelectMany(p => p.Value.ValueKind == JsonValueKind.Array
+                            ? p.Value.EnumerateArray().Select(e => e.GetString())
+                            : new[] { p.Value.GetString() })
+                        .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e));
+                    if (!string.IsNullOrWhiteSpace(first))
+                        throw new Exception(first);
+                }
             }
 
             if (root.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String)
