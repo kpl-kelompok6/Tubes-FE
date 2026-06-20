@@ -46,8 +46,7 @@ public partial class NewTransactionDialog : Window
         CustomerNameBox.IsEnabled = !isCreating;
         TableNumberBox.IsEnabled = !isCreating;
         CreatingPanel.Visibility = isCreating ? Visibility.Visible : Visibility.Collapsed;
-        if (CreatingPanel.Children[0] is ModernWpf.Controls.ProgressRing ring)
-            ring.IsActive = isCreating;
+        CreatingProgressRing.IsActive = isCreating;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)

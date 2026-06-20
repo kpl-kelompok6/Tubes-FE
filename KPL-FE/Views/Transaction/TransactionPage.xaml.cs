@@ -7,13 +7,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using KPL_FE.Views.Payment;
 
 namespace KPL_FE.Views;
 
 public partial class TransactionPage : Page
 {
     internal static bool PendingNewTransaction;
+    internal static int? PendingEditTransactionId;
 
     private readonly TransactionApiController _txApi = new();
     private readonly MenuApiController _menuApi = new();
@@ -40,6 +40,15 @@ public partial class TransactionPage : Page
             {
                 PendingNewTransaction = false;
                 OpenNewTransactionDialog();
+            }
+
+            if (PendingEditTransactionId.HasValue)
+            {
+                var id = PendingEditTransactionId.Value;
+                PendingEditTransactionId = null;
+                var match = _transactions.Find(t => t.Id == id);
+                if (match != null)
+                    TransactionsListBox.SelectedItem = match;
             }
         };
     }
@@ -483,26 +492,12 @@ public partial class TransactionPage : Page
         await ExecuteCartOperationAsync(_retryOperation, "Gagal memproses ulang operasi");
     }
 
-    private async void PayButton_Click(object sender, RoutedEventArgs e)
+    private void PayButton_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedTransaction == null) return;
 
-        var dialog = new PaymentDialog(_selectedTransaction)
-        {
-            Owner = Window.GetWindow(this)
-        };
-
-        if (dialog.ShowDialog() == true && dialog.Result != null)
-        {
-            MessageBox.Show($"Pembayaran berhasil! Kembalian: {dialog.Result.ChangeAmountFormatted}", "Sukses", MessageBoxButton.OK, MessageBoxImage.Information);
-            
-            // Clear selection because the transaction is paid (no longer in 'Created' state)
-            _selectedTransaction = null;
-            
-            // Refresh list (it will filter out the paid transaction)
-            await LoadTransactionsAsync();
-            RefreshUI();
-        }
+        PaymentPage.PendingPaymentTransactionId = _selectedTransaction.Id;
+        NavigationRootPage.SwitchTo(typeof(PaymentPage));
     }
 
     private async void RetryTransactionsButton_Click(object sender, RoutedEventArgs e) => await LoadTransactionsAsync();
