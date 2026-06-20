@@ -10,40 +10,27 @@ namespace KPL_FE.Views;
 
 public partial class LoginPage : Window
 {
-    private bool _isSyncing;
     public bool Saved { get; private set; }
 
     public LoginPage()
     {
         InitializeComponent();
         LoginUsernameBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
-        LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; LoginPasswordTextBox.Text = LoginPasswordBox.Password; _isSyncing = false; } };
-        LoginPasswordTextBox.TextChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; LoginPasswordBox.Password = LoginPasswordTextBox.Text; _isSyncing = false; } };
-        LoginPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
-        LoginPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(LoginPasswordBox, LoginPasswordTextBox, LoginPasswordToggle);
+        LoginPasswordBox.PasswordChanged += (_, _) => { UpdateLoginButton(); ClearStatus(); };
         RegUsernameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
-        RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; RegPasswordTextBox.Text = RegPasswordBox.Password; _isSyncing = false; } };
-        RegPasswordTextBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); if (!_isSyncing) { _isSyncing = true; RegPasswordBox.Password = RegPasswordTextBox.Text; _isSyncing = false; } };
-        RegPasswordToggle.Checked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
-        RegPasswordToggle.Unchecked += (_, _) => TogglePasswordVisibility(RegPasswordBox, RegPasswordTextBox, RegPasswordToggle);
+        RegPasswordBox.PasswordChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
         RegDisplayNameBox.TextChanged += (_, _) => { UpdateRegisterButton(); ClearStatus(); };
     }
 
     private void UpdateLoginButton()
     {
-        var hasPassword = LoginPasswordTextBox.Visibility == Visibility.Visible
-            ? !string.IsNullOrEmpty(LoginPasswordTextBox.Text)
-            : LoginPasswordBox.SecurePassword.Length > 0;
-        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text) && hasPassword;
+        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text) && LoginPasswordBox.SecurePassword.Length > 0;
     }
 
     private void UpdateRegisterButton()
     {
-        var hasPassword = RegPasswordTextBox.Visibility == Visibility.Visible
-            ? !string.IsNullOrEmpty(RegPasswordTextBox.Text)
-            : RegPasswordBox.SecurePassword.Length > 0;
         RegisterButton.IsEnabled = !string.IsNullOrWhiteSpace(RegUsernameBox.Text)
-            && hasPassword
+            && RegPasswordBox.SecurePassword.Length > 0
             && !string.IsNullOrWhiteSpace(RegDisplayNameBox.Text);
     }
 
@@ -69,34 +56,6 @@ public partial class LoginPage : Window
         }
     }
 
-    private string GetActivePassword(System.Windows.Controls.PasswordBox box, System.Windows.Controls.TextBox textBox)
-    {
-        if (textBox.Visibility == Visibility.Visible)
-            return textBox.Text;
-        return GetPassword(box);
-    }
-
-    private static void TogglePasswordVisibility(System.Windows.Controls.PasswordBox passwordBox, System.Windows.Controls.TextBox textBox, System.Windows.Controls.Primitives.ToggleButton toggle)
-    {
-        if (toggle.IsChecked == true)
-        {
-            textBox.Text = passwordBox.Password;
-            passwordBox.Visibility = Visibility.Collapsed;
-            textBox.Visibility = Visibility.Visible;
-            textBox.Focus();
-            textBox.SelectionStart = textBox.Text.Length;
-            toggle.ToolTip = "Sembunyikan password";
-        }
-        else
-        {
-            passwordBox.Password = textBox.Text;
-            passwordBox.Visibility = Visibility.Visible;
-            textBox.Visibility = Visibility.Collapsed;
-            passwordBox.Focus();
-            toggle.ToolTip = "Tampilkan password";
-        }
-    }
-
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         SetEnabled(false);
@@ -105,7 +64,7 @@ public partial class LoginPage : Window
         var request = new LoginRequest
         {
             Username = LoginUsernameBox.Text.Trim(),
-            Password = GetActivePassword(LoginPasswordBox, LoginPasswordTextBox)
+            Password = GetPassword(LoginPasswordBox)
         };
 
         try
@@ -130,7 +89,7 @@ public partial class LoginPage : Window
 
         var username = RegUsernameBox.Text.Trim();
         var displayName = RegDisplayNameBox.Text.Trim();
-        var password = GetActivePassword(RegPasswordBox, RegPasswordTextBox);
+        var password = GetPassword(RegPasswordBox);
 
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -167,9 +126,7 @@ public partial class LoginPage : Window
 
             LoginUsernameBox.Text = request.Username;
             LoginPasswordBox.Clear();
-            LoginPasswordTextBox.Clear();
             RegPasswordBox.Clear();
-            RegPasswordTextBox.Clear();
             ModeLogin.IsChecked = true;
             ShowSuccess("Akun berhasil dibuat. Silakan login.");
             SetEnabled(true);
