@@ -224,6 +224,7 @@
             <Grid x:Name="CartPanel" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -233,7 +234,27 @@
                     <TextBlock x:Name="SelectedTxCustomerText" Text="Pelanggan: -" FontSize="13" Opacity="0.7" Margin="0,4,0,0" />
                 </StackPanel>
 
-                <Border Grid.Row="1" Margin="0,12,0,0" CornerRadius="8"
+                <Border x:Name="OperationErrorOverlay" Grid.Row="1" Visibility="Collapsed"
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        CornerRadius="8" Padding="12" BorderThickness="1"
+                        BorderBrush="#E81123" Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Operasi Gagal" FontSize="13" FontWeight="Bold" Foreground="#E81123" />
+                            <TextBlock x:Name="OperationErrorText" Text="Server tidak merespons." FontSize="11" Margin="0,4,0,0" Opacity="0.8" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                            <Button Content="Coba Lagi" Padding="8,4" FontSize="11" Style="{DynamicResource AccentButtonStyle}" Click="RetryOperationButton_Click" />
+                            <Button Content="✕" Width="24" Height="24" Padding="0" FontSize="10" Margin="6,0,0,0" Click="DismissOperationErrorButton_Click" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="2" Margin="0,12,0,0" CornerRadius="8"
                         Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Padding="4">
                     <Grid>
                         <TextBlock x:Name="EmptyCartText" Text="Keranjang kosong — pilih menu untuk menambah item"
@@ -297,7 +318,7 @@
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="2" Margin="0,12,0,0">
+                <Grid Grid.Row="3" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -311,33 +332,21 @@
                             Style="{DynamicResource AccentButtonStyle}" FontSize="14" IsEnabled="False" Click="PayButton_Click" />
                 </Grid>
             </Grid>
+
+            <Border x:Name="OperationLoadingOverlay" Visibility="Collapsed"
+                    Background="#33000000" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid>
+                    <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                            CornerRadius="8" Padding="16" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:ProgressRing x:Name="OperationLoadingRing" Width="20" Height="20" IsActive="False" VerticalAlignment="Center" />
+                            <TextBlock Text="Memproses..." Margin="10,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
         </Grid>
-
-        <Border x:Name="OperationLoadingOverlay" Grid.ColumnSpan="5" Visibility="Collapsed"
-                Background="#66000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12" Padding="24" BorderThickness="1"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
-                <StackPanel HorizontalAlignment="Center">
-                    <ui:ProgressRing x:Name="OperationLoadingRing" Width="48" Height="48" IsActive="False" HorizontalAlignment="Center" />
-                    <TextBlock Text="Memproses..." Margin="0,12,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" />
-                </StackPanel>
-            </Border>
-        </Border>
-
-        <Border x:Name="OperationErrorOverlay" Grid.ColumnSpan="5" Visibility="Collapsed"
-                Background="#66000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12" Padding="24" BorderThickness="1"
-                    BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
-                <StackPanel>
-                    <TextBlock Text="Operasi gagal" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" />
-                    <TextBlock x:Name="OperationErrorText" Text="Server tidak merespons." Margin="0,8,0,0" Opacity="0.75" TextAlignment="Center" TextWrapping="Wrap" />
-                    <Button Content="Coba Lagi" Margin="0,16,0,0" HorizontalAlignment="Center" Click="RetryOperationButton_Click" />
-                </StackPanel>
-            </Border>
-        </Border>
     </Grid>
 </Page>

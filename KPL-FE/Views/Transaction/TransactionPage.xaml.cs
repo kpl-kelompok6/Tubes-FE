@@ -466,6 +466,12 @@ public partial class TransactionPage : Page
         }
     }
 
+    private void DismissOperationErrorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _operationErrorMessage = null;
+        UpdateOperationError();
+    }
+
     private async void RetryOperationButton_Click(object sender, RoutedEventArgs e)
     {
         if (_retryOperation == null) return;
