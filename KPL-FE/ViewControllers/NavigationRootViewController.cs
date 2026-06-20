@@ -43,6 +43,7 @@ public sealed class NavigationRootViewController
     {
         _ignore = true;
         SelectedPageType = content?.GetType();
-        _ignore = false;
     }
+
+    public void ReleaseIgnore() => _ignore = false;
 }

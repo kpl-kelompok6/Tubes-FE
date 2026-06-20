@@ -1,6 +1,8 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Windows;
 using KPL_FE.Views;
 
@@ -17,7 +19,19 @@ public sealed class AuthHandler : DelegatingHandler
         if (!isAuthRequest && !string.IsNullOrEmpty(App.Token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
 
-        var response = await base.SendAsync(request, cancellationToken);
+        HttpResponseMessage response;
+        try
+        {
+            response = await base.SendAsync(request, cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            throw new Exception("Gagal terhubung ke server. Pastikan server sedang berjalan.");
+        }
+        catch (TaskCanceledException)
+        {
+            throw new Exception("Waktu koneksi habis. Server tidak merespon.");
+        }
 
         if (!isAuthRequest && response.StatusCode == HttpStatusCode.Unauthorized)
         {
@@ -42,7 +56,18 @@ public sealed class AuthHandler : DelegatingHandler
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
                 response.Dispose();
-                response = await base.SendAsync(request, cancellationToken);
+                try
+                {
+                    response = await base.SendAsync(request, cancellationToken);
+                }
+                catch (HttpRequestException)
+                {
+                    throw new Exception("Gagal terhubung ke server. Pastikan server sedang berjalan.");
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new Exception("Waktu koneksi habis. Server tidak merespon.");
+                }
             }
         }
 
