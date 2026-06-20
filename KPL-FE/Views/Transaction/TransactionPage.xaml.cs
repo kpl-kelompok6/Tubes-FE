@@ -58,22 +58,28 @@ public partial class TransactionPage : Page
         OpenNewTransactionDialog();
     }
 
-    private void OpenNewTransactionDialog()
+    private async void OpenNewTransactionDialog()
     {
         var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
         if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
         {
-            _isRefreshing = true;
-            _ = LoadTransactionsAsync().ContinueWith(_ =>
+            try
             {
-                Dispatcher.Invoke(() =>
-                {
-                    var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
-                    if (match != null)
-                        TransactionsListBox.SelectedItem = match;
-                    _isRefreshing = false;
-                });
-            });
+                _isRefreshing = true;
+                await LoadTransactionsAsync();
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
+
+            // By doing this after _isRefreshing is false, the SelectionChanged
+            // event will trigger and fetch the transaction details properly.
+            var match = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
+            if (match != null)
+            {
+                TransactionsListBox.SelectedItem = match;
+            }
         }
     }
 
@@ -152,6 +158,7 @@ public partial class TransactionPage : Page
             {
                 TransactionsListBox.SelectedItem = match;
             }
+            await Task.Delay(50); // Yield to allow WPF to handle layout/selection
         }
         finally
         {
@@ -201,6 +208,7 @@ public partial class TransactionPage : Page
 
         EmptyCartText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         PayButton.IsEnabled = items.Count > 0;
+        CancelTransactionButton.IsEnabled = true;
     }
 
     private void UpdateTransactionsState()
@@ -266,27 +274,9 @@ public partial class TransactionPage : Page
     // Transaction List Events
     // ──────────────────────────────────────────────
 
-    private async void NewTransactionButton_Click(object sender, RoutedEventArgs e)
+    private void NewTransactionButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new NewTransactionDialog { Owner = Window.GetWindow(this) };
-        if (dialog.ShowDialog() == true && dialog.CreatedTransaction != null)
-        {
-            _isRefreshing = true;
-            try
-            {
-                await LoadTransactionsAsync();
-
-                var newTx = _transactions.Find(t => t.Id == dialog.CreatedTransaction.Id);
-                if (newTx != null)
-                {
-                    TransactionsListBox.SelectedItem = newTx;
-                }
-            }
-            finally
-            {
-                _isRefreshing = false;
-            }
-        }
+        OpenNewTransactionDialog();
     }
 
     private async void TransactionsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -486,10 +476,44 @@ public partial class TransactionPage : Page
         }
     }
 
+    private void DismissOperationErrorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _operationErrorMessage = null;
+        UpdateOperationError();
+    }
+
     private async void RetryOperationButton_Click(object sender, RoutedEventArgs e)
     {
         if (_retryOperation == null) return;
         await ExecuteCartOperationAsync(_retryOperation, "Gagal memproses ulang operasi");
+    }
+
+    private async void CancelTransactionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedTransaction == null) return;
+
+        var dialog = new ModernWpf.Controls.ContentDialog
+        {
+            Title = "Batalkan Transaksi",
+            Content = $"Yakin ingin membatalkan transaksi {_selectedTransaction.TransactionCode}? Semua item akan dihapus dan aksi ini tidak dapat dibatalkan.",
+            PrimaryButtonText = "Ya, Batalkan",
+            CloseButtonText = "Tidak",
+            DefaultButton = ModernWpf.Controls.ContentDialogButton.Close
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ModernWpf.Controls.ContentDialogResult.Primary) return;
+
+        var txId = _selectedTransaction.Id;
+
+        await ExecuteCartOperationAsync(async () =>
+        {
+            var api = new TransactionApiController();
+            await api.CancelAsync(txId);
+
+            _selectedTransaction = null;
+            await LoadTransactionsAsync();
+        }, "Gagal membatalkan transaksi");
     }
 
     private void PayButton_Click(object sender, RoutedEventArgs e)

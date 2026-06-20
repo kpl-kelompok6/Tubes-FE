@@ -22,4 +22,7 @@ public sealed class TransactionApiController
 
     public async Task<TransactionDto> UpdateItemQuantityAsync(int transactionId, int itemId, UpdateItemRequest request, CancellationToken cancellationToken = default)
         => await App.Api.PatchAsync<TransactionDto>($"transactions/{transactionId}/items/{itemId}", request, cancellationToken);
+
+    public async Task CancelAsync(int transactionId, CancellationToken cancellationToken = default)
+        => await App.Api.DeleteAsync($"transactions/{transactionId}", cancellationToken);
 }
