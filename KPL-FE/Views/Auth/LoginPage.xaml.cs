@@ -24,7 +24,8 @@ public partial class LoginPage : Window
 
     private void UpdateLoginButton()
     {
-        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text) && LoginPasswordBox.SecurePassword.Length > 0;
+        LoginButton.IsEnabled = !string.IsNullOrWhiteSpace(LoginUsernameBox.Text)
+            && LoginPasswordBox.SecurePassword.Length > 0;
     }
 
     private void UpdateRegisterButton()
@@ -40,6 +41,20 @@ public partial class LoginPage : Window
         var isLogin = ModeLogin.IsChecked == true;
         LoginPanel.Visibility = isLogin ? Visibility.Visible : Visibility.Collapsed;
         RegisterPanel.Visibility = isLogin ? Visibility.Collapsed : Visibility.Visible;
+
+        // Workaround: After the layout pass completes, force PasswordBox to
+        // re-evaluate its visual state so the reveal button appears correctly.
+        var targetBox = isLogin ? LoginPasswordBox : RegPasswordBox;
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var saved = targetBox.Password;
+            if (!string.IsNullOrEmpty(saved))
+            {
+                targetBox.Password = "";
+                targetBox.Password = saved;
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
+
         ClearStatus();
     }
 
@@ -56,15 +71,44 @@ public partial class LoginPage : Window
         }
     }
 
+
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        SetEnabled(false);
         ClearStatus();
+
+        var username = LoginUsernameBox.Text.Trim();
+        var password = GetPassword(LoginPasswordBox);
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            ShowError("Login gagal: Username tidak boleh kosong.");
+            return;
+        }
+
+        if (username.Length < 3)
+        {
+            ShowError("Login gagal: Username minimal 3 karakter.");
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z0-9]+$"))
+        {
+            ShowError("Login gagal: Username hanya boleh terdiri dari huruf dan angka.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            ShowError("Login gagal: Password tidak boleh kosong.");
+            return;
+        }
+
+        SetEnabled(false);
 
         var request = new LoginRequest
         {
-            Username = LoginUsernameBox.Text.Trim(),
-            Password = GetPassword(LoginPasswordBox)
+            Username = username,
+            Password = password
         };
 
         try
@@ -94,6 +138,18 @@ public partial class LoginPage : Window
         if (string.IsNullOrWhiteSpace(username))
         {
             ShowError("Registrasi gagal: Username tidak boleh kosong.");
+            return;
+        }
+
+        if (username.Length < 3)
+        {
+            ShowError("Registrasi gagal: Username minimal 3 karakter.");
+            return;
+        }
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z0-9]+$"))
+        {
+            ShowError("Registrasi gagal: Username hanya boleh terdiri dari huruf dan angka.");
             return;
         }
 

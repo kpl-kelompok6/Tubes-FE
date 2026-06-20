@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         Title="Tambah Menu"
-        Width="480" Height="500"
-        MinWidth="400" MinHeight="350"
+        Width="480" Height="700"
+        MinWidth="400" MinHeight="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanMinimize"
         ShowInTaskbar="False"
@@ -16,8 +16,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Hidden">
+            <StackPanel Margin="0,0,8,0">
                 <TextBlock x:Name="TitleText" Text="Tambah Menu" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
 
                 <StackPanel>
@@ -56,6 +56,26 @@
                     <TextBox x:Name="ImageUrlBox" MaxLength="2048"
                              ui:ControlHelper.PlaceholderText="https://contoh.com/gambar.jpg" />
                 </StackPanel>
+
+                <Border Margin="0,16,0,0" Height="244" CornerRadius="8" BorderThickness="1" 
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}" 
+                        HorizontalAlignment="Stretch" ClipToBounds="True">
+                    <Grid>
+                        <!-- Placeholder when loading fails or URL is empty -->
+                        <Grid x:Name="PlaceholderGrid" Visibility="Visible">
+                            <ui:FontIcon Glyph="&#xEB9F;" FontSize="36" Opacity="0.4" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            <TextBlock Text="No Image Preview" FontSize="11" Margin="0,0,0,24"
+                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" 
+                                       Opacity="0.4" />
+                        </Grid>
+                        <!-- Live Image Preview -->
+                        <Image x:Name="ImagePreview" Stretch="UniformToFill" 
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               ImageFailed="ImagePreview_ImageFailed" 
+                               Visibility="Collapsed" />
+                    </Grid>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
