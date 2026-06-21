@@ -147,4 +147,48 @@ public partial class MenuDialog : Window
     }
 
     private void UpdateImagePreview()
+    {
+        var url = ImageUrlBox.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            ShowPlaceholder();
+            return;
+        }
+
+        try
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uriResult) 
+                || (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+            {
+                ShowPlaceholder();
+                return;
+            }
+
+            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = uriResult;
+            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+
+            ImagePreview.Source = bitmap;
+            ImagePreview.Visibility = Visibility.Visible;
+            PlaceholderGrid.Visibility = Visibility.Collapsed;
+        }
+        catch
+        {
+            ShowPlaceholder();
+        }
+    }
+
+    private void ShowPlaceholder()
+    {
+        ImagePreview.Source = null;
+        ImagePreview.Visibility = Visibility.Collapsed;
+        PlaceholderGrid.Visibility = Visibility.Visible;
+    }
+
+    private void ImagePreview_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+    {
+        ShowPlaceholder();
+    }
 }

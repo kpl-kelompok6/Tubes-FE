@@ -1,14 +1,7 @@
+using KPL_FE.Views;
 using KPL_FE.Views.Controls;
 
 namespace KPL_FE.Services;
-
-public enum ToastType
-{
-    Success,
-    Error,
-    Warning,
-    Info
-}
 
 public static class ToastService
 {

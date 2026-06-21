@@ -14,7 +14,6 @@ public partial class MenuPage : Page
     private List<MenuDto> _allMenus = [];
     private bool _isLoading;
     private string? _loadErrorMessage;
-    private string? _operationErrorMessage;
     private MenuDto? _pendingDeleteMenu;
 
     public MenuPage()
@@ -158,14 +157,4 @@ public partial class MenuPage : Page
         }
     }
 
-    private void UpdateOperationError()
-    {
-        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
-        OperationErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
-
-        if (hasError)
-        {
-            OperationErrorText.Text = _operationErrorMessage;
-        }
-    }
 }

@@ -27,8 +27,6 @@ public partial class TransactionPage : Page
     private bool _isLoadingMenus;
     private string? _transactionsLoadError;
     private string? _menusLoadError;
-    private string? _operationErrorMessage;
-    private Func<Task>? _retryOperation;
 
     public TransactionPage()
     {
@@ -445,19 +443,18 @@ public partial class TransactionPage : Page
 
     private void UpdateOperationError()
     {
-        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
+        var hasError = !string.IsNullOrWhiteSpace(null);
         OperationErrorOverlay.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
 
         if (hasError)
         {
-            OperationErrorText.Text = _operationErrorMessage;
+            OperationErrorText.Text = null;
         }
     }
 
     private void DismissOperationErrorButton_Click(object sender, RoutedEventArgs e)
     {
-        _operationErrorMessage = null;
-        UpdateOperationError();
+        OperationErrorOverlay.Visibility = Visibility.Collapsed;
     }
 
     private async void RetryOperationButton_Click(object sender, RoutedEventArgs e)
@@ -477,7 +474,7 @@ public partial class TransactionPage : Page
 
         try
         {
-            await _txApi.CancelTransactionAsync(_selectedTransaction.Id);
+            await _txApi.CancelAsync(_selectedTransaction.Id);
             _selectedTransaction = null;
             await LoadTransactionsAsync();
         }

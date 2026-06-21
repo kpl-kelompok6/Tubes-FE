@@ -31,6 +31,11 @@ public partial class SettingsPage : Page
 
         if (!setup.Saved) return;
 
+        config.BaseUrl = setup.BaseUrl;
+        App.Config.Save(config);
+        UrlDisplay.Text = App.BaseUrl;
+    }
+
     private async void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         var confirmed = await DialogService.ShowConfirm("Reset Setup", "Reset backend URL? This will show the setup dialog on next launch.");
