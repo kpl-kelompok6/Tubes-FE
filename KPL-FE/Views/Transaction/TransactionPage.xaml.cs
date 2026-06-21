@@ -1,8 +1,8 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -101,7 +101,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            _transactionsLoadError = GetFriendlyErrorMessage(ex, "transaksi");
+            _transactionsLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "transaksi");
             UpdateTransactionsState();
         }
         finally
@@ -126,7 +126,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            _menusLoadError = GetFriendlyErrorMessage(ex, "menu");
+            _menusLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "menu");
             UpdateMenuState();
         }
         finally
@@ -449,7 +449,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            _operationErrorMessage = $"{errorPrefix}: {GetFriendlyErrorMessage(ex, "operasi")}";
+            _operationErrorMessage = $"{errorPrefix}: {ErrorHelper.GetFriendlyErrorMessage(ex, "operasi")}";
             UpdateOperationError();
         }
         finally
@@ -526,15 +526,4 @@ public partial class TransactionPage : Page
     private async void RetryTransactionsButton_Click(object sender, RoutedEventArgs e) => await LoadTransactionsAsync();
 
     private async void RetryMenusButton_Click(object sender, RoutedEventArgs e) => await LoadMenusAsync();
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
-    }
 }

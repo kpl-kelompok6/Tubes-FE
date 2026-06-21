@@ -1,9 +1,9 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,14 +26,19 @@ public partial class HistoryPage : Page
         InitializeComponent();
         Loaded += async (_, _) =>
         {
+            var today = DateTime.Today;
+            StartDatePicker.DisplayDateEnd = today;
+            EndDatePicker.DisplayDateEnd = today;
             StartDatePicker.SelectedDate = DateTime.Today.AddDays(-7);
-            EndDatePicker.SelectedDate = DateTime.Today;
+            EndDatePicker.SelectedDate = today;
             await LoadDataAsync();
         };
     }
 
     private async Task LoadDataAsync()
     {
+        if (!ValidateDateFilter()) return;
+
         await Task.WhenAll(
             LoadHistoriesAsync(),
             LoadReportAsync());
@@ -54,7 +59,7 @@ public partial class HistoryPage : Page
         }
         catch (Exception ex)
         {
-            _historiesLoadError = GetFriendlyErrorMessage(ex, "riwayat");
+            _historiesLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "riwayat");
             UpdateHistoryState();
         }
         finally
@@ -80,7 +85,7 @@ public partial class HistoryPage : Page
         catch (Exception ex)
         {
             _report = null;
-            _reportLoadError = GetFriendlyErrorMessage(ex, "laporan");
+            _reportLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "laporan");
             UpdateReportUI();
         }
         finally
@@ -167,7 +172,47 @@ public partial class HistoryPage : Page
     {
         StartDatePicker.SelectedDate = null;
         EndDatePicker.SelectedDate = null;
+        ClearDateFilterValidation();
         await LoadDataAsync();
+    }
+
+    private void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        ClearDateFilterValidation();
+    }
+
+    private bool ValidateDateFilter()
+    {
+        var start = StartDatePicker.SelectedDate?.Date;
+        var end = EndDatePicker.SelectedDate?.Date;
+        var today = DateTime.Today;
+
+        if (start > today || end > today)
+        {
+            ShowDateFilterValidation("Tanggal filter tidak boleh melebihi hari ini.");
+            return false;
+        }
+
+        if (start.HasValue && end.HasValue && start > end)
+        {
+            ShowDateFilterValidation("Tanggal mulai tidak boleh lebih besar dari tanggal akhir.");
+            return false;
+        }
+
+        ClearDateFilterValidation();
+        return true;
+    }
+
+    private void ShowDateFilterValidation(string message)
+    {
+        DateFilterValidationText.Text = message;
+        DateFilterValidationText.Visibility = Visibility.Visible;
+    }
+
+    private void ClearDateFilterValidation()
+    {
+        DateFilterValidationText.Text = string.Empty;
+        DateFilterValidationText.Visibility = Visibility.Collapsed;
     }
 
     private void HistoryListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -186,15 +231,4 @@ public partial class HistoryPage : Page
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
     private async void RetryReportButton_Click(object sender, RoutedEventArgs e) => await LoadReportAsync();
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
-    }
 }
