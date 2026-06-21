@@ -243,7 +243,7 @@ public partial class PaymentPage : Page
     {
         _selectedTransaction = null;
         _successTransaction = null;
-        _ = LoadActiveTransactionsAsync();
+        NavigationRootPage.SwitchTo(typeof(TransactionPage));
     }
 
     // ──────────────────────────────────────────────

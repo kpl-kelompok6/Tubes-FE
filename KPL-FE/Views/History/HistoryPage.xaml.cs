@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace KPL_FE.Views;
 
@@ -207,16 +208,16 @@ public partial class HistoryPage : Page
     {
         DateFilterValidationText.Text = message;
         DateFilterValidationText.Visibility = Visibility.Visible;
-        StartDateErrorBorder.Visibility = Visibility.Visible;
-        EndDateErrorBorder.Visibility = Visibility.Visible;
+        StartDateErrorBorder.BorderBrush = Brushes.Red;
+        EndDateErrorBorder.BorderBrush = Brushes.Red;
     }
 
     private void ClearDateFilterValidation()
     {
         DateFilterValidationText.Text = string.Empty;
         DateFilterValidationText.Visibility = Visibility.Collapsed;
-        StartDateErrorBorder.Visibility = Visibility.Collapsed;
-        EndDateErrorBorder.Visibility = Visibility.Collapsed;
+        StartDateErrorBorder.BorderBrush = Brushes.Transparent;
+        EndDateErrorBorder.BorderBrush = Brushes.Transparent;
     }
 
     private void HistoryListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

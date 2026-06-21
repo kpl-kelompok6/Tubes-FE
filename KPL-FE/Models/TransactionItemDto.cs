@@ -16,12 +16,16 @@ public sealed class TransactionItemDto
     [JsonPropertyName("quantity")]
     public int Quantity { get; init; }
 
+    [JsonPropertyName("basePrice")]
+    public decimal BasePrice { get; init; }
+
     [JsonPropertyName("unitPrice")]
     public decimal UnitPrice { get; init; }
 
     [JsonPropertyName("subtotal")]
     public decimal Subtotal { get; init; }
 
+    public string BasePriceFormatted => $"Rp {BasePrice:N0}";
     public string UnitPriceFormatted => $"Rp {UnitPrice:N0}";
     public string SubtotalFormatted => $"Rp {Subtotal:N0}";
 }

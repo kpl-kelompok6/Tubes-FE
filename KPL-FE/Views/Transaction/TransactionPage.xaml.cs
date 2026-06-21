@@ -211,6 +211,24 @@ public partial class TransactionPage : Page
         EmptyCartText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         PayButton.IsEnabled = items.Count > 0;
         CancelTransactionButton.IsEnabled = true;
+
+        UpdatePpnBreakdown(items);
+    }
+
+    private void UpdatePpnBreakdown(List<TransactionItemDto> items)
+    {
+        var hasBasePrice = items.Any(i => i.BasePrice > 0);
+        PpnBreakdownPanel.Visibility = hasBasePrice ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!hasBasePrice) return;
+
+        var baseSubtotal = items.Sum(i => i.BasePrice * i.Quantity);
+        var ppnAmount = baseSubtotal * 0.11m;
+        var totalAfterPpn = baseSubtotal + ppnAmount;
+
+        SubtotalWithoutPpnText.Text = $"Rp {baseSubtotal:N0}";
+        PpnAmountText.Text = $"Rp {ppnAmount:N0}";
+        PpnTotalAmountText.Text = $"Rp {totalAfterPpn:N0}";
     }
 
     private void UpdateTransactionsState()
