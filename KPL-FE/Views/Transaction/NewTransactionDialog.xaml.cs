@@ -46,11 +46,7 @@ public partial class NewTransactionDialog : Window
         CustomerNameBox.IsEnabled = !isCreating;
         TableNumberBox.IsEnabled = !isCreating;
         CreatingPanel.Visibility = isCreating ? Visibility.Visible : Visibility.Collapsed;
-<<<<<<< HEAD
-        CreatingRing.IsActive = isCreating;
-=======
         CreatingProgressRing.IsActive = isCreating;
->>>>>>> origin/staging
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
