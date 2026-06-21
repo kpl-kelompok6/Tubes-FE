@@ -1,7 +1,8 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,7 +14,6 @@ public partial class MenuPage : Page
     private List<MenuDto> _allMenus = [];
     private bool _isLoading;
     private string? _loadErrorMessage;
-    private string? _operationErrorMessage;
     private MenuDto? _pendingDeleteMenu;
 
     public MenuPage()
@@ -35,7 +35,7 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            _loadErrorMessage = GetFriendlyErrorMessage(ex, "menu");
+            _loadErrorMessage = ErrorHelper.GetFriendlyErrorMessage(ex, "menu");
             UpdateState();
         }
         finally
@@ -95,24 +95,8 @@ public partial class MenuPage : Page
     {
         if ((sender as FrameworkElement)?.Tag is not MenuDto menu) return;
 
-        await DeleteMenuAsync(menu, confirm: true);
-    }
-
-    private async Task DeleteMenuAsync(MenuDto menu, bool confirm)
-    {
-        if (confirm)
-        {
-            var result = MessageDialog.Show(
-                "Hapus Menu",
-                $"Hapus menu \"{menu.Name}\"?",
-                MessageDialogButton.YesNo);
-
-            if (result != MessageDialogResult.Yes) return;
-        }
-
-        _pendingDeleteMenu = menu;
-        _operationErrorMessage = null;
-        UpdateOperationError();
+        var confirmed = await DialogService.ShowConfirm("Hapus Menu", $"Hapus menu \"{menu.Name}\"?");
+        if (!confirmed) return;
 
         try
         {
@@ -124,13 +108,7 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            _operationErrorMessage = $"Gagal menghapus menu: {GetFriendlyErrorMessage(ex, "operasi")}";
-            UpdateOperationError();
-        }
-        finally
-        {
-            _isLoading = false;
-            UpdateState();
+            await DialogService.ShowError("Error", $"Gagal menghapus: {ex.Message}");
         }
     }
 
@@ -139,7 +117,18 @@ public partial class MenuPage : Page
     private async void RetryDeleteButton_Click(object sender, RoutedEventArgs e)
     {
         if (_pendingDeleteMenu == null) return;
-        await DeleteMenuAsync(_pendingDeleteMenu, confirm: false);
+        try
+        {
+            _isLoading = true;
+            UpdateState();
+            await _api.DeleteAsync(_pendingDeleteMenu.Id);
+            _pendingDeleteMenu = null;
+            await LoadMenus();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal menghapus: {ex.Message}");
+        }
     }
 
     private void UpdateState(int? visibleCount = null, string? filter = null, string? searchText = null)
@@ -168,25 +157,4 @@ public partial class MenuPage : Page
         }
     }
 
-    private void UpdateOperationError()
-    {
-        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
-        OperationErrorPanel.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
-
-        if (hasError)
-        {
-            OperationErrorText.Text = _operationErrorMessage;
-        }
-    }
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
-    }
 }

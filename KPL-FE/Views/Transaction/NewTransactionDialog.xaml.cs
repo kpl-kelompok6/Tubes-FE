@@ -1,5 +1,6 @@
 using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
 using System.Windows;
 
@@ -18,12 +19,20 @@ public partial class NewTransactionDialog : Window
 
     private async void CreateButton_Click(object sender, RoutedEventArgs e)
     {
+        var tableNumber = string.IsNullOrWhiteSpace(TableNumberBox.Text) ? null : TableNumberBox.Text.Trim();
+        
+        if (tableNumber != null && !System.Text.RegularExpressions.Regex.IsMatch(tableNumber, "^[0-9]+$"))
+        {
+            MessageBox.Show("Nomor meja hanya boleh berisi angka.", "Validasi Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         SetCreating(true);
 
         var request = new CreateTransactionRequest
         {
             CustomerName = string.IsNullOrWhiteSpace(CustomerNameBox.Text) ? null : CustomerNameBox.Text.Trim(),
-            TableNumber = string.IsNullOrWhiteSpace(TableNumberBox.Text) ? null : TableNumberBox.Text.Trim()
+            TableNumber = tableNumber
         };
 
         try
@@ -34,8 +43,12 @@ public partial class NewTransactionDialog : Window
         }
         catch (Exception ex)
         {
-            MessageDialog.Show("Error", $"Gagal membuat transaksi: {ex.Message}", MessageDialogButton.OK);
-            SetCreating(false);
+            await DialogService.ShowError("Error", $"Gagal membuat transaksi: {ex.Message}");
+            
+            CreateButton.IsEnabled = true;
+            CancelButton.IsEnabled = true;
+            CustomerNameBox.IsEnabled = true;
+            TableNumberBox.IsEnabled = true;
         }
     }
 

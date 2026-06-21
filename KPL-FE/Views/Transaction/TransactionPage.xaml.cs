@@ -1,8 +1,9 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,8 +27,6 @@ public partial class TransactionPage : Page
     private bool _isLoadingMenus;
     private string? _transactionsLoadError;
     private string? _menusLoadError;
-    private string? _operationErrorMessage;
-    private Func<Task>? _retryOperation;
 
     public TransactionPage()
     {
@@ -101,7 +100,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            _transactionsLoadError = GetFriendlyErrorMessage(ex, "transaksi");
+            _transactionsLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "transaksi");
             UpdateTransactionsState();
         }
         finally
@@ -126,7 +125,7 @@ public partial class TransactionPage : Page
         }
         catch (Exception ex)
         {
-            _menusLoadError = GetFriendlyErrorMessage(ex, "menu");
+            _menusLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "menu");
             UpdateMenuState();
         }
         finally
@@ -158,7 +157,10 @@ public partial class TransactionPage : Page
             {
                 TransactionsListBox.SelectedItem = match;
             }
-            await Task.Delay(50); // Yield to allow WPF to handle layout/selection
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal memuat detail transaksi: {ex.Message}");
         }
         finally
         {
@@ -209,6 +211,24 @@ public partial class TransactionPage : Page
         EmptyCartText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         PayButton.IsEnabled = items.Count > 0;
         CancelTransactionButton.IsEnabled = true;
+
+        UpdatePpnBreakdown(items);
+    }
+
+    private void UpdatePpnBreakdown(List<TransactionItemDto> items)
+    {
+        var hasBasePrice = items.Any(i => i.BasePrice > 0);
+        PpnBreakdownPanel.Visibility = hasBasePrice ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!hasBasePrice) return;
+
+        var baseSubtotal = items.Sum(i => i.BasePrice * i.Quantity);
+        var ppnAmount = baseSubtotal * 0.11m;
+        var totalAfterPpn = baseSubtotal + ppnAmount;
+
+        SubtotalWithoutPpnText.Text = $"Rp {baseSubtotal:N0}";
+        PpnAmountText.Text = $"Rp {ppnAmount:N0}";
+        PpnTotalAmountText.Text = $"Rp {totalAfterPpn:N0}";
     }
 
     private void UpdateTransactionsState()
@@ -330,7 +350,7 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null)
         {
-            ToastNotificationService.Instance.ShowInfo("Pilih transaksi terlebih dahulu.");
+            ToastService.ShowInfo("Pilih transaksi terlebih dahulu.");
             return;
         }
 
@@ -347,15 +367,19 @@ public partial class TransactionPage : Page
             Quantity = 1
         };
 
-        await ExecuteCartOperationAsync(
-            async () =>
-            {
-                await _txApi.AddItemAsync(txId, request);
-                await RefreshSelectedTransactionAsync();
-            },
-            "Gagal menambahkan item");
-
-        if (button != null) button.IsEnabled = true;
+        try
+        {
+            await _txApi.AddItemAsync(_selectedTransaction.Id, request);
+            await RefreshSelectedTransactionAsync();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal menambahkan item: {ex.Message}");
+        }
+        finally
+        {
+            if (button != null) button.IsEnabled = true;
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -367,16 +391,16 @@ public partial class TransactionPage : Page
         if (_selectedTransaction == null) return;
         if (sender is not FrameworkElement { Tag: TransactionItemDto item }) return;
 
-        var txId = _selectedTransaction.Id;
-        var request = new UpdateItemRequest { Quantity = item.Quantity + 1 };
-
-        await ExecuteCartOperationAsync(
-            async () =>
-            {
-                await _txApi.UpdateItemQuantityAsync(txId, item.Id, request);
-                await RefreshSelectedTransactionAsync();
-            },
-            "Gagal mengubah jumlah");
+        try
+        {
+            var request = new UpdateItemRequest { Quantity = item.Quantity + 1 };
+            await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
+            await RefreshSelectedTransactionAsync();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal mengubah jumlah: {ex.Message}");
+        }
     }
 
     private async void DecreaseQtyButton_Click(object sender, RoutedEventArgs e)
@@ -391,16 +415,16 @@ public partial class TransactionPage : Page
             return;
         }
 
-        var txId = _selectedTransaction.Id;
-        var request = new UpdateItemRequest { Quantity = item.Quantity - 1 };
-
-        await ExecuteCartOperationAsync(
-            async () =>
-            {
-                await _txApi.UpdateItemQuantityAsync(txId, item.Id, request);
-                await RefreshSelectedTransactionAsync();
-            },
-            "Gagal mengubah jumlah");
+        try
+        {
+            var request = new UpdateItemRequest { Quantity = item.Quantity - 1 };
+            await _txApi.UpdateItemQuantityAsync(_selectedTransaction.Id, item.Id, request);
+            await RefreshSelectedTransactionAsync();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal mengubah jumlah: {ex.Message}");
+        }
     }
 
     private async void RemoveItemButton_Click(object sender, RoutedEventArgs e)
@@ -415,46 +439,17 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null) return;
 
-        var result = MessageDialog.Show(
-            "Hapus Item",
-            $"Hapus \"{item.MenuName}\" dari keranjang?",
-            MessageDialogButton.YesNo);
-
-        if (result != MessageDialogResult.Yes) return;
-
-        var txId = _selectedTransaction.Id;
-
-        await ExecuteCartOperationAsync(
-            async () =>
-            {
-                await _txApi.RemoveItemAsync(txId, item.Id);
-                await RefreshSelectedTransactionAsync();
-            },
-            "Gagal menghapus item");
-    }
-
-    private async Task ExecuteCartOperationAsync(Func<Task> operation, string errorPrefix)
-    {
-        _retryOperation = operation;
-        _operationErrorMessage = null;
-        UpdateOperationError();
-        SetOperationLoading(true);
+        var confirmed = await DialogService.ShowConfirm("Hapus Item", $"Hapus \"{item.MenuName}\" dari keranjang?");
+        if (!confirmed) return;
 
         try
         {
-            await operation();
-            _retryOperation = null;
-            _operationErrorMessage = null;
-            UpdateOperationError();
+            await _txApi.RemoveItemAsync(_selectedTransaction.Id, item.Id);
+            await RefreshSelectedTransactionAsync();
         }
         catch (Exception ex)
         {
-            _operationErrorMessage = $"{errorPrefix}: {GetFriendlyErrorMessage(ex, "operasi")}";
-            UpdateOperationError();
-        }
-        finally
-        {
-            SetOperationLoading(false);
+            await DialogService.ShowError("Error", $"Gagal menghapus item: {ex.Message}");
         }
     }
 
@@ -466,53 +461,45 @@ public partial class TransactionPage : Page
 
     private void UpdateOperationError()
     {
-        var hasError = !string.IsNullOrWhiteSpace(_operationErrorMessage);
+        var hasError = !string.IsNullOrWhiteSpace(null);
         OperationErrorOverlay.Visibility = hasError ? Visibility.Visible : Visibility.Collapsed;
 
         if (hasError)
         {
-            OperationErrorText.Text = _operationErrorMessage;
+            OperationErrorText.Text = null;
         }
     }
 
     private void DismissOperationErrorButton_Click(object sender, RoutedEventArgs e)
     {
-        _operationErrorMessage = null;
-        UpdateOperationError();
+        OperationErrorOverlay.Visibility = Visibility.Collapsed;
     }
 
     private async void RetryOperationButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_retryOperation == null) return;
-        await ExecuteCartOperationAsync(_retryOperation, "Gagal memproses ulang operasi");
+        await LoadTransactionsAsync();
+        await LoadMenusAsync();
     }
 
     private async void CancelTransactionButton_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedTransaction == null) return;
 
-        var dialog = new ModernWpf.Controls.ContentDialog
+        var confirmed = await DialogService.ShowConfirm(
+            "Batalkan Transaksi",
+            $"Yakin ingin membatalkan transaksi {_selectedTransaction.TransactionCode}? Semua item akan dihapus dan aksi ini tidak dapat dibatalkan.");
+        if (!confirmed) return;
+
+        try
         {
-            Title = "Batalkan Transaksi",
-            Content = $"Yakin ingin membatalkan transaksi {_selectedTransaction.TransactionCode}? Semua item akan dihapus dan aksi ini tidak dapat dibatalkan.",
-            PrimaryButtonText = "Ya, Batalkan",
-            CloseButtonText = "Tidak",
-            DefaultButton = ModernWpf.Controls.ContentDialogButton.Close
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result != ModernWpf.Controls.ContentDialogResult.Primary) return;
-
-        var txId = _selectedTransaction.Id;
-
-        await ExecuteCartOperationAsync(async () =>
-        {
-            var api = new TransactionApiController();
-            await api.CancelAsync(txId);
-
+            await _txApi.CancelAsync(_selectedTransaction.Id);
             _selectedTransaction = null;
             await LoadTransactionsAsync();
-        }, "Gagal membatalkan transaksi");
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowError("Error", $"Gagal membatalkan transaksi: {ex.Message}");
+        }
     }
 
     private void PayButton_Click(object sender, RoutedEventArgs e)
@@ -526,15 +513,4 @@ public partial class TransactionPage : Page
     private async void RetryTransactionsButton_Click(object sender, RoutedEventArgs e) => await LoadTransactionsAsync();
 
     private async void RetryMenusButton_Click(object sender, RoutedEventArgs e) => await LoadMenusAsync();
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
-    }
 }

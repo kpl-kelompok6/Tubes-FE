@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace KPL_FE.Models;
@@ -12,40 +13,44 @@ public sealed class ReportDto
     [JsonPropertyName("endDate")]
     public DateTime EndDate { get; init; }
 
-    [JsonPropertyName("totalTransactions")]
+    [JsonPropertyName("totalTransaksi")]
     public int TotalTransactions { get; init; }
 
-    [JsonPropertyName("totalRevenue")]
+    [JsonPropertyName("totalPendapatan")]
     public decimal TotalRevenue { get; init; }
 
-    [JsonPropertyName("averageTransaction")]
+    [JsonPropertyName("rataRata")]
     public decimal AverageTransaction { get; init; }
 
     [JsonPropertyName("breakdown")]
-    public List<PaymentBreakdownDto> Breakdown { get; init; } = [];
+    public Dictionary<string, decimal> BreakdownRaw { get; init; } = [];
+
+    [JsonIgnore]
+    public List<PaymentBreakdownDisplay> Breakdown => BreakdownRaw
+        .Select(kvp => new PaymentBreakdownDisplay(kvp.Key, kvp.Value))
+        .ToList();
 
     public string TotalRevenueFormatted => $"Rp {TotalRevenue:N0}";
     public string AverageTransactionFormatted => $"Rp {AverageTransaction:N0}";
 }
 
-public sealed class PaymentBreakdownDto
+public sealed class PaymentBreakdownDisplay
 {
-    [JsonPropertyName("paymentMethod")]
-    public string PaymentMethod { get; init; } = string.Empty;
-
-    [JsonPropertyName("count")]
-    public int Count { get; init; }
-
-    [JsonPropertyName("total")]
-    public decimal Total { get; init; }
-
+    public string PaymentMethodRaw { get; }
+    public decimal Total { get; }
     public string TotalFormatted => $"Rp {Total:N0}";
-    public string PaymentMethodDisplay => PaymentMethod switch
+    public string PaymentMethodDisplay => PaymentMethodRaw switch
     {
-        "Cash" => "Tunai",
-        "Debit" => "Debit",
-        "QRIS" => "QRIS",
-        "Transfer" => "Transfer",
-        _ => PaymentMethod
+        "cash" => "Tunai",
+        "debit" => "Debit",
+        "qris" => "QRIS",
+        "transfer" => "Transfer",
+        _ => PaymentMethodRaw
     };
+
+    public PaymentBreakdownDisplay(string paymentMethod, decimal total)
+    {
+        PaymentMethodRaw = paymentMethod;
+        Total = total;
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using KPL_FE.Controllers;
 using KPL_FE.Models;
+using KPL_FE.Services;
 using KPL_FE.ViewControllers;
 using KPL_FE.Views;
 using System;
@@ -23,7 +24,7 @@ public partial class NavigationRootPage : UserControl
     {
         InitializeComponent();
         _rootFrame = RootFrame;
-        ToastNotificationService.Instance.Initialize(ToastContainer);
+        ToastService.Register(ToastOverlay);
 
         _vc = new NavigationRootViewController(
             pages: new[]
@@ -63,6 +64,13 @@ public partial class NavigationRootPage : UserControl
         {
             e.Handled = true;
             _shortcuts.HandleRefresh();
+            return;
+        }
+
+        if (e.KeyboardDevice.Modifiers == ModifierKeys.Shift && e.Key == Key.OemQuestion)
+        {
+            e.Handled = true;
+            _shortcuts.HandleShowHelp();
             return;
         }
     }

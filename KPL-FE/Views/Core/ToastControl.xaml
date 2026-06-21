@@ -1,18 +1,18 @@
 <UserControl x:Class="KPL_FE.Views.ToastControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
              x:Name="ToastRoot"
              Height="Auto"
              Width="360">
     <Border x:Name="ToastBorder"
-            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            Background="{Binding ElementName=ToastRoot, Path=ToastBackground}"
             BorderThickness="0"
             CornerRadius="8"
             Margin="0,0,0,8"
-            UseLayoutRounding="True"
-            Effect="{DynamicResource SystemControlDropShadowEffect}">
+            UseLayoutRounding="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.3" Color="Black"/>
+        </Border.Effect>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6"/>
@@ -36,6 +36,7 @@
                        HorizontalAlignment="Center"
                        Margin="12,12,0,12"
                        FontFamily="Segoe MDL2 Assets"
+                       Foreground="{Binding ElementName=ToastRoot, Path=ToastForeground}"
                        Text="{Binding ElementName=ToastRoot, Path=ToastIcon}"/>
 
             <TextBlock x:Name="MessageText"
@@ -45,7 +46,7 @@
                        VerticalAlignment="Center"
                        Margin="10,12,0,12"
                        FontSize="14"
-                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                       Foreground="{Binding ElementName=ToastRoot, Path=ToastForeground}"/>
 
             <Button x:Name="CloseButton"
                     Grid.Column="3"
@@ -58,7 +59,7 @@
                     VerticalAlignment="Top"
                     Background="Transparent"
                     BorderThickness="0"
-                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                    Foreground="{Binding ElementName=ToastRoot, Path=ToastForeground}"
                     Cursor="Hand"
                     Click="CloseButton_Click"/>
         </Grid>

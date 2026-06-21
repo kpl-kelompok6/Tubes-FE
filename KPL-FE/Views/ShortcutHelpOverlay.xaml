@@ -1,0 +1,78 @@
+<Window x:Class="KPL_FE.Views.ShortcutHelpOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        KeyDown="OnOverlayKeyDown"
+        MouseDown="OnOverlayMouseDown"
+        Focusable="True"
+        Loaded="OnLoaded">
+
+    <Grid Background="#CC000000">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="420" Padding="32"
+                CornerRadius="12"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}">
+            <StackPanel>
+                <TextBlock Text="Pintasan Keyboard" FontSize="24" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Margin="0,0,0,24" />
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border CornerRadius="6" Padding="14,8" Margin="0,0,16,0"
+                            Background="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}">
+                        <TextBlock Text="Ctrl+N" FontSize="14" FontWeight="Bold" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="Transaksi Baru" FontSize="15"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border CornerRadius="6" Padding="14,8" Margin="0,0,16,0"
+                            Background="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}">
+                        <TextBlock Text="Ctrl+F" FontSize="14" FontWeight="Bold" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="Cari Menu" FontSize="15"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border CornerRadius="6" Padding="14,8" Margin="0,0,16,0"
+                            Background="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}">
+                        <TextBlock Text="F5" FontSize="14" FontWeight="Bold" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="Refresh Halaman" FontSize="15"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <Border Height="1" Margin="0,8,0,16"
+                        Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+
+                <TextBlock Text="Tekan Shift+? atau Esc untuk menutup"
+                           FontSize="12" Opacity="0.6"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

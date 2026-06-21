@@ -1,0 +1,11 @@
+<UserControl x:Class="KPL_FE.Views.Controls.ToastNotification"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False">
+    <Grid>
+        <StackPanel x:Name="ToastContainer"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,16,16"/>
+    </Grid>
+</UserControl>
