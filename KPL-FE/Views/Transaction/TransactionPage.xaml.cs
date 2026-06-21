@@ -330,7 +330,7 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null)
         {
-            MessageBox.Show("Pilih transaksi terlebih dahulu.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastNotificationService.Instance.ShowInfo("Pilih transaksi terlebih dahulu.");
             return;
         }
 
@@ -415,13 +415,12 @@ public partial class TransactionPage : Page
     {
         if (_selectedTransaction == null) return;
 
-        var result = MessageBox.Show(
-            $"Hapus \"{item.MenuName}\" dari keranjang?",
+        var result = MessageDialog.Show(
             "Hapus Item",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
+            $"Hapus \"{item.MenuName}\" dari keranjang?",
+            MessageDialogButton.YesNo);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageDialogResult.Yes) return;
 
         var txId = _selectedTransaction.Id;
 

@@ -73,8 +73,7 @@ public partial class MenuPage : Page
     {
         if (App.Role != "Admin")
         {
-            MessageBox.Show("Only admin can add menu items.", "Access Denied",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageDialog.Show("Akses Ditolak", "Hanya admin yang dapat menambah item menu.", MessageDialogButton.OK);
             return;
         }
 
@@ -103,13 +102,12 @@ public partial class MenuPage : Page
     {
         if (confirm)
         {
-            var result = MessageBox.Show(
-                $"Hapus menu \"{menu.Name}\"?",
+            var result = MessageDialog.Show(
                 "Hapus Menu",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                $"Hapus menu \"{menu.Name}\"?",
+                MessageDialogButton.YesNo);
 
-            if (result != MessageBoxResult.Yes) return;
+            if (result != MessageDialogResult.Yes) return;
         }
 
         _pendingDeleteMenu = menu;

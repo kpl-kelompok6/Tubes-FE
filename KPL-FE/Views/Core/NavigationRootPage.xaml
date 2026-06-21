@@ -21,5 +21,12 @@
         </DockPanel>
 
         <ui:Frame x:Name="RootFrame" Grid.Column="1" Navigated="RootFrame_Navigated"/>
+
+        <StackPanel x:Name="ToastContainer"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,16,16"
+                    Panel.ZIndex="10000"/>
     </Grid>
 </UserControl>
