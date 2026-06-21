@@ -1,7 +1,7 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
 using System;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -35,7 +35,7 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            _loadErrorMessage = GetFriendlyErrorMessage(ex, "menu");
+            _loadErrorMessage = ErrorHelper.GetFriendlyErrorMessage(ex, "menu");
             UpdateState();
         }
         finally
@@ -119,7 +119,7 @@ public partial class MenuPage : Page
         }
         catch (Exception ex)
         {
-            _operationErrorMessage = $"Gagal menghapus menu: {GetFriendlyErrorMessage(ex, "operasi")}";
+            _operationErrorMessage = $"Gagal menghapus menu: {ErrorHelper.GetFriendlyErrorMessage(ex, "operasi")}";
             UpdateOperationError();
         }
         finally
@@ -172,16 +172,5 @@ public partial class MenuPage : Page
         {
             OperationErrorText.Text = _operationErrorMessage;
         }
-    }
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
     }
 }

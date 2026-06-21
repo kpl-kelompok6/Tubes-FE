@@ -1,9 +1,9 @@
 using KPL_FE.Controllers;
+using KPL_FE.Helpers;
 using KPL_FE.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,7 +59,7 @@ public partial class HistoryPage : Page
         }
         catch (Exception ex)
         {
-            _historiesLoadError = GetFriendlyErrorMessage(ex, "riwayat");
+            _historiesLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "riwayat");
             UpdateHistoryState();
         }
         finally
@@ -85,7 +85,7 @@ public partial class HistoryPage : Page
         catch (Exception ex)
         {
             _report = null;
-            _reportLoadError = GetFriendlyErrorMessage(ex, "laporan");
+            _reportLoadError = ErrorHelper.GetFriendlyErrorMessage(ex, "laporan");
             UpdateReportUI();
         }
         finally
@@ -231,15 +231,4 @@ public partial class HistoryPage : Page
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
     private async void RetryReportButton_Click(object sender, RoutedEventArgs e) => await LoadReportAsync();
-
-    private static string GetFriendlyErrorMessage(Exception ex, string context)
-    {
-        if (ex is TaskCanceledException or TimeoutException or OperationCanceledException)
-            return $"Server tidak merespons saat memuat {context}. Coba Lagi.";
-
-        if (ex is HttpRequestException)
-            return $"Tidak dapat terhubung ke server saat memuat {context}. Coba Lagi.";
-
-        return $"Gagal memuat {context}: {ex.Message}";
-    }
 }
