@@ -27,6 +27,12 @@ public partial class ToastControl : UserControl
     public static readonly DependencyProperty ToastIconProperty =
         DependencyProperty.Register(nameof(ToastIcon), typeof(string), typeof(ToastControl), new PropertyMetadata(string.Empty));
 
+    public static readonly DependencyProperty ToastBackgroundProperty =
+        DependencyProperty.Register(nameof(ToastBackground), typeof(Brush), typeof(ToastControl), new PropertyMetadata(null));
+
+    public static readonly DependencyProperty ToastForegroundProperty =
+        DependencyProperty.Register(nameof(ToastForeground), typeof(Brush), typeof(ToastControl), new PropertyMetadata(null));
+
     public string Message
     {
         get => (string)GetValue(MessageProperty);
@@ -43,6 +49,18 @@ public partial class ToastControl : UserControl
     {
         get => (string)GetValue(ToastIconProperty);
         set => SetValue(ToastIconProperty, value);
+    }
+
+    public Brush ToastBackground
+    {
+        get => (Brush)GetValue(ToastBackgroundProperty);
+        set => SetValue(ToastBackgroundProperty, value);
+    }
+
+    public Brush ToastForeground
+    {
+        get => (Brush)GetValue(ToastForegroundProperty);
+        set => SetValue(ToastForegroundProperty, value);
     }
 
     public ToastType Type { get; private set; }
@@ -63,6 +81,9 @@ public partial class ToastControl : UserControl
             Message = message,
             Type = type
         };
+
+        toast.ToastBackground = new SolidColorBrush(Color.FromRgb(37, 37, 37));
+        toast.ToastForeground = new SolidColorBrush(Colors.White);
 
         switch (type)
         {
