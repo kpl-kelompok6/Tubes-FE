@@ -28,12 +28,16 @@
 
                         <StackPanel>
                             <TextBlock Text="Dari" FontSize="11" Opacity="0.6" Margin="0,0,0,4" />
-                            <DatePicker x:Name="StartDatePicker" Width="150" SelectedDateChanged="DatePicker_SelectedDateChanged" />
+                            <Border x:Name="StartDateErrorBorder" BorderBrush="Red" BorderThickness="2" CornerRadius="4" Visibility="Collapsed" Width="154">
+                                <DatePicker x:Name="StartDatePicker" Width="150" SelectedDateChanged="DatePicker_SelectedDateChanged" />
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Sampai" FontSize="11" Opacity="0.6" Margin="0,0,0,4" />
-                            <DatePicker x:Name="EndDatePicker" Width="150" SelectedDateChanged="DatePicker_SelectedDateChanged" />
+                            <Border x:Name="EndDateErrorBorder" BorderBrush="Red" BorderThickness="2" CornerRadius="4" Visibility="Collapsed" Width="154">
+                                <DatePicker x:Name="EndDatePicker" Width="150" SelectedDateChanged="DatePicker_SelectedDateChanged" />
+                            </Border>
                         </StackPanel>
 
                         <Button Grid.Column="4" x:Name="FilterButton" Content="Filter" Height="32"
