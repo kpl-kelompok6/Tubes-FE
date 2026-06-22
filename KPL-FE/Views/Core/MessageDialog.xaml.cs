@@ -25,6 +25,7 @@ public partial class MessageDialog : Window
     private MessageDialog(string title, string message, MessageDialogButton buttons)
     {
         InitializeComponent();
+        Title = title;
         TitleText.Text = title;
         MessageText.Text = message;
         SetupButtons(buttons);

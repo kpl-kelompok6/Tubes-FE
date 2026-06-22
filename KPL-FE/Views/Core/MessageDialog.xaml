@@ -11,8 +11,6 @@
         ShowInTaskbar="False"
         Topmost="True"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
         ui:WindowHelper.UseModernWindowStyle="True">
 
     <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
