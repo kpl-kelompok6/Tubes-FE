@@ -44,6 +44,7 @@ public partial class SetupWindow : Window
 
         if (ok)
         {
+            UrlTextBox.Text = url;
             Saved = true;
             DialogResult = true;
             Close();
