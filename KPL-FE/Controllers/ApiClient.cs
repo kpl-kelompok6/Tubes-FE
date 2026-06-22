@@ -34,6 +34,14 @@ public sealed class ApiClient
         {
             throw new Exception("Waktu koneksi habis. Server tidak merespon.");
         }
+        catch (InvalidOperationException)
+        {
+            throw new Exception("URL backend tidak valid. Pastikan URL dimulai dengan http:// atau https://.");
+        }
+        catch (UriFormatException)
+        {
+            throw new Exception("URL backend tidak valid. Pastikan URL dimulai dengan http:// atau https://.");
+        }
     }
 
     public async Task<T> GetAsync<T>(string path, CancellationToken cancellationToken = default)
