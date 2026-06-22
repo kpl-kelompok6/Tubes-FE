@@ -22,7 +22,7 @@ public sealed class KeyboardShortcutController
         if (_getCurrentPageType() != target)
         {
             Views.TransactionPage.PendingNewTransaction = true;
-            _frame.Navigate(target);
+            NavigationRootPage.SwitchTo(target);
         }
         else if (_frame.Content is Views.TransactionPage txPage)
         {
@@ -35,7 +35,7 @@ public sealed class KeyboardShortcutController
         var target = typeof(MenuPage);
         if (_getCurrentPageType() != target)
         {
-            _frame.Navigate(target);
+            NavigationRootPage.SwitchTo(target);
         }
     }
 
@@ -43,7 +43,7 @@ public sealed class KeyboardShortcutController
     {
         var current = _frame.Content as Page;
         if (current == null) return;
-        _frame.Navigate(current.GetType());
+        NavigationRootPage.SwitchTo(current.GetType());
     }
 
     public void HandleShowHelp()
