@@ -45,6 +45,14 @@ public sealed class HealthChecker : IDisposable
         {
             return (false, "Invalid JSON response. Is this the correct backend?");
         }
+        catch (InvalidOperationException ex)
+        {
+            return (false, $"Invalid URL format: {ex.Message}");
+        }
+        catch (UriFormatException ex)
+        {
+            return (false, $"Invalid URL format: {ex.Message}");
+        }
     }
 
     public void Dispose() => _http.Dispose();

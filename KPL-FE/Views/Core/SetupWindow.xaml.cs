@@ -34,8 +34,13 @@ public partial class SetupWindow : Window
         StatusText.Foreground = Brushes.Gray;
         StatusText.Text = "Verifying...";
 
+        var url = BaseUrl;
+        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            url = "http://" + url;
+
         using var checker = new HealthChecker();
-        var (ok, error) = await checker.VerifyAsync(BaseUrl);
+        var (ok, error) = await checker.VerifyAsync(url);
 
         if (ok)
         {
